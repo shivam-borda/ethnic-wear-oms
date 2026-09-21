@@ -1,5 +1,5 @@
 "use client";
-
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -94,18 +94,21 @@ export default function OrdersClient({ initialOrders }: Props) {
             style={{ borderColor: "hsl(var(--border))" }}
           />
         </div>
-        <select
-          id="orders-status-filter"
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2.5 rounded-lg border bg-card text-sm outline-none"
-          style={{ borderColor: "hsl(var(--border))" }}
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="delivered">Delivered</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+        <div className="w-44">
+          <SearchableSelect
+            id="orders-status-filter"
+            options={[
+              { value: "all", label: "All Status" },
+              { value: "active", label: "Active" },
+              { value: "delivered", label: "Delivered" },
+              { value: "cancelled", label: "Cancelled" },
+            ]}
+            value={statusFilter}
+            onChange={(val) => { setStatusFilter(val || "all"); setPage(1); }}
+            placeholder="Filter by Status"
+            searchPlaceholder="Search status..."
+          />
+        </div>
         <Link
           href="/orders/new"
           id="orders-new-btn"

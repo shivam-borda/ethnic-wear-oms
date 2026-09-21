@@ -18,7 +18,7 @@ export default async function EditOrderPage({ params }: Props) {
   ] = await Promise.all([
     supabase
       .from("oms_orders")
-      .select("*, order_items(*)")
+      .select("*, order_items(*), attachments(*)")
       .eq("id", id)
       .single(),
     supabase.from("parties").select("*").order("name"),
@@ -28,6 +28,14 @@ export default async function EditOrderPage({ params }: Props) {
   if (!order) notFound();
 
   const typedOrder = order as Order;
+
+  const initialAttachments = (typedOrder.attachments || []).map((att) => ({
+    id: att.id,
+    file_url: att.file_url,
+    file_name: att.file_name || "",
+    file_type: att.file_type || "",
+  }));
+
   const items: OrderItemFormData[] = (typedOrder.order_items || [])
     .sort((a, b) => (a.position || 0) - (b.position || 0))
     .map((item) => ({
@@ -54,6 +62,7 @@ export default async function EditOrderPage({ params }: Props) {
         stitching_measurement_number: typedOrder.stitching_measurement_number || "",
         notes: typedOrder.notes || "",
         items,
+        initialAttachments,
       }}
     />
   );

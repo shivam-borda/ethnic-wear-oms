@@ -16,6 +16,7 @@ export default async function OrderDetailPage({ params }: Props) {
     .select(`
       *,
       party:parties(*),
+      attachments(*),
       order_items(
         *,
         fabric_party:fabric_parties(*),

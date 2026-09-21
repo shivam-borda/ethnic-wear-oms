@@ -33,7 +33,7 @@ export interface FabricParty {
   updated_at: string;
 }
 
-export type ItemType = 'kurta' | 'koti' | 'kurta_koti' | 'pant' | 'blazer';
+export type ItemType = 'kurta' | 'koti' | 'kurta_koti' | 'pant' | 'blazer' | 'jacket' | 'indo_western' | 'jodhpuri';
 export type StageStatus = 'pending' | 'in_progress' | 'completed';
 export type OrderStatus = 'active' | 'delivered' | 'cancelled';
 export type Stage = 'fabric' | 'work' | 'stitching' | 'delivery';
@@ -102,6 +102,7 @@ export interface Order {
   updated_at: string;
   party?: Party;
   order_items?: OrderItem[];
+  attachments?: Attachment[];
 }
 
 export interface Attachment {
@@ -168,6 +169,9 @@ export const ITEM_TYPE_LABELS: Record<ItemType, string> = {
   kurta_koti: 'Kurta + Koti',
   pant: 'Pant',
   blazer: 'Blazer',
+  jacket: 'Jacket',
+  indo_western: 'Indo Western',
+  jodhpuri: 'Jodhpuri',
 };
 
 export const STAGE_LABELS: Record<Stage, string> = {
@@ -182,3 +186,45 @@ export const STATUS_LABELS: Record<StageStatus, string> = {
   in_progress: 'In Progress',
   completed: 'Completed',
 };
+
+
+export interface GarmentMeasurements {
+  slip_number?: string;
+  kurta_length?: string;
+  chest?: string;
+  waist?: string;
+  hips?: string;
+  shoulder?: string;
+  sleeve_length?: string;
+  sleeve_opening?: string;
+  collar_neck?: string;
+  biceps?: string;
+  front_cross?: string;
+  pant_length?: string;
+  pant_waist?: string;
+  pant_hips?: string;
+  thigh?: string;
+  knee?: string;
+  ganlo?: string;
+  galo?: string;
+  bottom_mori?: string;
+  notes?: string;
+}
+
+export function parseMeasurements(raw?: string | null): GarmentMeasurements {
+  if (!raw) return {};
+  try {
+    if (raw.trim().startsWith('{')) {
+      return JSON.parse(raw);
+    }
+  } catch {}
+  return { slip_number: raw || '' };
+}
+
+export interface OrderAttachmentFormData {
+  id?: string;
+  file_url: string;
+  file_name: string;
+  file_type?: string;
+  category?: 'reference' | 'fabric' | 'color' | 'material';
+}

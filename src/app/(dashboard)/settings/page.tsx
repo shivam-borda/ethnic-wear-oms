@@ -1,5 +1,5 @@
 "use client";
-
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile, UserRole } from "@/types";
@@ -353,15 +353,16 @@ export default function SettingsPage() {
                 <label className="block text-sm font-medium mb-1">
                   Role
                 </label>
-                <select
+                <SearchableSelect
+                  options={[
+                    { value: "staff", label: "Staff" },
+                    { value: "admin", label: "Admin" },
+                  ]}
                   value={newRole}
-                  onChange={(e) => setNewRole(e.target.value as UserRole)}
-                  className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none"
-                  style={{ borderColor: "hsl(var(--border))" }}
-                >
-                  <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
-                </select>
+                  onChange={(val) => setNewRole((val || "staff") as UserRole)}
+                  placeholder="Select Role"
+                  searchPlaceholder="Search role..."
+                />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">

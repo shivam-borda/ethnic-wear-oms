@@ -1,5 +1,6 @@
 "use client";
-
+import { BulletPointsList } from "@/components/ui/BulletPoints";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Order, OrderItem, Stage, StageStatus } from "@/types";
 import {
   ITEM_TYPE_LABELS,
+  parseMeasurements,
   STAGE_LABELS,
   STATUS_LABELS,
 } from "@/types";
@@ -68,6 +70,7 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
   const [order, setOrder] = useState<Order>(initialOrder);
   const [updatingStage, setUpdatingStage] = useState<string | null>(null);
   const [deletingOrder, setDeletingOrder] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
   const handleStageUpdate = async (
     item: OrderItem,
@@ -184,16 +187,19 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <select
-              value={order.status}
-              onChange={(e) => handleStatusUpdate(e.target.value)}
-              className="px-3 py-2 rounded-lg text-sm font-medium border-0 outline-none cursor-pointer"
-              style={{ background: "hsl(345,50%,35%)", color: "hsl(40,60%,90%)" }}
-            >
-              <option value="active">Active</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+            <div className="w-36">
+              <SearchableSelect
+                options={[
+                  { value: "active", label: "Active" },
+                  { value: "delivered", label: "Delivered" },
+                  { value: "cancelled", label: "Cancelled" },
+                ]}
+                value={order.status}
+                onChange={(val) => handleStatusUpdate(val)}
+                placeholder="Status"
+                searchPlaceholder="Search status..."
+              />
+            </div>
             <button onClick={handlePrint} className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-80" style={{ background: "hsl(40,85%,52%)", color: "hsl(20,15%,10%)" }}>
               🖨️ Print
             </button>
@@ -225,10 +231,124 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
           <InfoRow label="Order Date" value={formatDate(order.order_date)} />
           <InfoRow label="Delivery Date" value={formatDate(order.delivery_date)} highlight={!!order.delivery_date} />
           <InfoRow label="Vyapar Order No." value={order.vyapar_order_number} />
-          <InfoRow label="Measurement No." value={order.stitching_measurement_number} />
-          {order.notes && <InfoRow label="Notes" value={order.notes} />}
+          <InfoRow label="Measurement No." value={parseMeasurements(order.stitching_measurement_number).slip_number || order.stitching_measurement_number} />
+          {order.notes && (
+            <div className="pt-2 border-t" style={{ borderColor: "hsl(var(--border))" }}>
+              <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block mb-1">Fabric, Material & Design Points:</span>
+              <BulletPointsList text={order.notes} />
+            </div>
+          )}
         </div>
       </div>
+
+      
+      {/* Measurement Section if exists */}
+      {order.stitching_measurement_number && (() => {
+        const m = parseMeasurements(order.stitching_measurement_number);
+        const hasUpper = m.kurta_length || m.chest || m.waist || m.shoulder || m.sleeve_length || m.collar_neck;
+        const hasLower = m.pant_length || m.pant_waist || m.pant_hips || m.thigh || m.bottom_mori;
+
+        return (
+          <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4" style={{ borderColor: "hsl(var(--border))" }}>
+            <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: "hsl(var(--border))" }}>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📏</span>
+                <h3 className="font-semibold text-lg" style={{ fontFamily: "Cormorant Garamond, serif", color: "hsl(var(--primary))" }}>
+                  Measurement Details (માપણી વિગત)
+                </h3>
+                {m.slip_number && (
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 ml-2">
+                    Slip #: {m.slip_number}
+                  </span>
+                )}
+              </div>
+              <Link
+                href="/measurements"
+                className="text-xs font-medium px-3 py-1.5 rounded-lg border hover:bg-muted transition-colors flex items-center gap-1.5"
+                style={{ borderColor: "hsl(var(--border))" }}
+              >
+                <span>🖨️</span> Open Measurement Module & Print
+              </Link>
+            </div>
+
+            {hasUpper && (
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-primary uppercase tracking-wide">👔 Upper Body Garment</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  {m.kurta_length && <div className="bg-muted/50 p-2 rounded border">Length: <span className="font-bold">{m.kurta_length}</span></div>}
+                  {m.chest && <div className="bg-muted/50 p-2 rounded border">Chest: <span className="font-bold">{m.chest}</span></div>}
+                  {m.waist && <div className="bg-muted/50 p-2 rounded border">Waist: <span className="font-bold">{m.waist}</span></div>}
+                  {m.hips && <div className="bg-muted/50 p-2 rounded border">Hips: <span className="font-bold">{m.hips}</span></div>}
+                  {m.shoulder && <div className="bg-muted/50 p-2 rounded border">Shoulder: <span className="font-bold">{m.shoulder}</span></div>}
+                  {m.sleeve_length && <div className="bg-muted/50 p-2 rounded border">Sleeve: <span className="font-bold">{m.sleeve_length}</span></div>}
+                  {m.sleeve_opening && <div className="bg-muted/50 p-2 rounded border">Sleeve Mori: <span className="font-bold">{m.sleeve_opening}</span></div>}
+                  {m.collar_neck && <div className="bg-muted/50 p-2 rounded border">Collar: <span className="font-bold">{m.collar_neck}</span></div>}
+                  {m.biceps && <div className="bg-muted/50 p-2 rounded border">Biceps: <span className="font-bold">{m.biceps}</span></div>}
+                </div>
+              </div>
+            )}
+
+            {hasLower && (
+              <div className="space-y-2 pt-2">
+                <p className="text-xs font-bold text-primary uppercase tracking-wide">👖 Lower Body Garment</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                  {m.pant_length && <div className="bg-muted/50 p-2 rounded border">Pant Length: <span className="font-bold">{m.pant_length}</span></div>}
+                  {m.pant_waist && <div className="bg-muted/50 p-2 rounded border">Pant Waist: <span className="font-bold">{m.pant_waist}</span></div>}
+                  {m.pant_hips && <div className="bg-muted/50 p-2 rounded border">Seat/Hips: <span className="font-bold">{m.pant_hips}</span></div>}
+                  {m.thigh && <div className="bg-muted/50 p-2 rounded border">Thigh: <span className="font-bold">{m.thigh}</span></div>}
+                  {m.knee && <div className="bg-muted/50 p-2 rounded border">Knee: <span className="font-bold">{m.knee}</span></div>}
+                  {m.ganlo && <div className="bg-muted/50 p-2 rounded border">Ganlo: <span className="font-bold">{m.ganlo}</span></div>}
+                  {m.galo && <div className="bg-muted/50 p-2 rounded border">Galo: <span className="font-bold">{m.galo}</span></div>}
+                  {m.bottom_mori && <div className="bg-muted/50 p-2 rounded border">Mori: <span className="font-bold">{m.bottom_mori}</span></div>}
+                </div>
+              </div>
+            )}
+
+
+          </div>
+        );
+      })()}
+
+      
+      {/* Reference Images & Attachments Gallery */}
+      {order.attachments && order.attachments.length > 0 && (
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4" style={{ borderColor: "hsl(var(--border))" }}>
+          <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: "hsl(var(--border))" }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📸</span>
+              <h3 className="font-semibold text-lg" style={{ fontFamily: "Cormorant Garamond, serif", color: "hsl(var(--primary))" }}>
+                Reference Images ({order.attachments.length})
+              </h3>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {order.attachments.map((att) => (
+              <div
+                key={att.id}
+                onClick={() => setPreviewImage({ url: att.file_url, title: att.file_name || "Reference Image" })}
+                className="group relative border rounded-xl overflow-hidden bg-background cursor-pointer hover:shadow-md transition-all flex flex-col"
+                style={{ borderColor: "hsl(var(--border))" }}
+              >
+                <div className="w-full h-36 bg-black/5 relative overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={att.file_url}
+                    alt={att.file_name || "Attachment"}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
+                    🔍 Click to Zoom
+                  </div>
+                </div>
+                <div className="p-2 bg-card border-t text-center" style={{ borderColor: "hsl(var(--border))" }}>
+                  <p className="text-xs font-semibold truncate text-foreground">{att.file_name || "Reference Image"}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Items */}
       <div className="space-y-4">

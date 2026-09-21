@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS public.oms_orders (
 CREATE TABLE IF NOT EXISTS public.order_items (
   id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   order_id              UUID NOT NULL REFERENCES public.oms_orders(id) ON DELETE CASCADE,
-  item_type             TEXT NOT NULL CHECK (item_type IN ('kurta', 'koti', 'kurta_koti', 'pant', 'blazer')),
+  item_type             TEXT NOT NULL CHECK (item_type IN ('kurta', 'koti', 'kurta_koti', 'pant', 'blazer', 'jacket', 'indo_western', 'jodhpuri')),
   fabric_party_id       UUID REFERENCES public.fabric_parties(id) ON DELETE SET NULL,
   fabric_details        TEXT,
   fabric_image_url      TEXT,

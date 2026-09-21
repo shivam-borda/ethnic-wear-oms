@@ -27,6 +27,7 @@ const navItems: NavItem[] = [
       { id: "orders-all", label: "All Orders", icon: "📑", href: "/orders" },
     ],
   },
+  { id: "measurements", label: "Measurements", icon: "📏", href: "/measurements" },
   { id: "reports", label: "Reports", icon: "📈", href: "/reports" },
   { id: "parties", label: "Parties", icon: "👥", href: "/parties" },
   { id: "fabric-parties", label: "Fabric Parties", icon: "🧵", href: "/fabric-parties" },

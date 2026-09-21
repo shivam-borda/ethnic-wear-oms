@@ -58,6 +58,9 @@ export function getItemTypeIcon(type: string): string {
     kurta_koti: '👔',
     pant: '👖',
     blazer: '🥼',
+    jacket: '🧥',
+    indo_western: '🤵',
+    jodhpuri: '👑',
   };
   return icons[type] || '👗';
 }
