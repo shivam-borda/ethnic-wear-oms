@@ -1,4 +1,5 @@
 "use client";
+import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { useState } from "react";
@@ -169,7 +170,9 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
   const handlePrint = () => window.print();
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <>
+      {/* Screen Interactive Dashboard View */}
+      <div className="max-w-5xl mx-auto space-y-6 print:hidden">
       {/* Header Card */}
       <div
         className="rounded-xl p-6 relative overflow-hidden"
@@ -469,6 +472,12 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
         ))}
       </div>
     </div>
+
+    {/* Dedicated Printable Tailor Job Sheet */}
+    <div className="hidden print:block">
+      <PrintableJobSheet order={order} />
+    </div>
+    </>
   );
 }
 

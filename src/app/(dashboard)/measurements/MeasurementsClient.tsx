@@ -1,4 +1,5 @@
 "use client";
+import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
 import { useState } from "react";
 import Link from "next/link";
@@ -56,7 +57,8 @@ export default function MeasurementsClient({ initialOrders }: Props) {
     : {};
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6 print:hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -198,21 +200,20 @@ export default function MeasurementsClient({ initialOrders }: Props) {
 
       {/* Measurement Detail & Print Modal */}
       {isPrintModalOpen && selectedOrder && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-card rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-6 relative my-8 print:shadow-none print:p-0 print:m-0 print:w-full print:max-w-none">
-
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto print:static print:p-0 print:bg-white">
+          <div className="bg-card rounded-2xl shadow-2xl max-w-3xl w-full p-6 space-y-6 relative my-8 print:shadow-none print:p-0 print:m-0 print:w-full print:max-w-none print:bg-white">
             {/* Modal Top Actions (Hidden in Print) */}
             <div className="flex items-center justify-between border-b pb-4 print:hidden" style={{ borderColor: "hsl(var(--border))" }}>
               <div className="flex items-center gap-2">
                 <span className="text-xl">📐</span>
                 <h2 className="text-xl font-bold" style={{ fontFamily: "Cormorant Garamond, serif" }}>
-                  Measurement Sheet
+                  Tailor Job Sheet & Measurement Slip
                 </h2>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2 hover:opacity-90"
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2 hover:opacity-90 transition-opacity"
                   style={{ background: "hsl(var(--primary))" }}
                 >
                   <span>🖨️</span> Print Sheet
@@ -226,180 +227,17 @@ export default function MeasurementsClient({ initialOrders }: Props) {
               </div>
             </div>
 
-            {/* Printable Content Area */}
-            <div id="printable-measurement-sheet" className="space-y-6">
-              {/* Header Slip Branding */}
-              <div className="flex items-start justify-between border-b pb-4" style={{ borderColor: "hsl(var(--border))" }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-white p-1 border shadow-sm flex items-center justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/logo.png" alt="Aahman" className="w-full h-full object-contain" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold" style={{ fontFamily: "Cormorant Garamond, serif" }}>
-                      Aahman Ethnic Wear
-                    </h1>
-                    <p className="text-xs text-muted-foreground">Tailor Stitching & Measurement Slip</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-primary">
-                    Slip No: {selectedMeasurements.slip_number || selectedOrder.stitching_measurement_number || "N/A"}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">Order #: {selectedOrder.order_number}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Date: {selectedOrder.order_date ? format(new Date(selectedOrder.order_date), "dd/MM/yyyy") : ""}
-                  </div>
-                </div>
-              </div>
-
-              {/* Customer Details Box */}
-              <div className="bg-muted/40 rounded-xl p-4 grid grid-cols-2 gap-3 text-xs border" style={{ borderColor: "hsl(var(--border))" }}>
-                <div>
-                  <span className="text-muted-foreground uppercase font-medium">Customer Name:</span>
-                  <p className="font-bold text-sm text-foreground">{selectedOrder.party?.name || "N/A"}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground uppercase font-medium">Phone Number:</span>
-                  <p className="font-bold text-sm text-foreground">{selectedOrder.phone || selectedOrder.party?.phone || "N/A"}</p>
-                </div>
-                {selectedOrder.delivery_date && (
-                  <div>
-                    <span className="text-muted-foreground uppercase font-medium">Delivery Date:</span>
-                    <p className="font-semibold text-orange-600">
-                      {format(new Date(selectedOrder.delivery_date), "dd MMM yyyy")}
-                    </p>
-                  </div>
-                )}
-                {selectedOrder.vyapar_order_number && (
-                  <div>
-                    <span className="text-muted-foreground uppercase font-medium">Vyapar No:</span>
-                    <p className="font-semibold">{selectedOrder.vyapar_order_number}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Upper Body Measurement Grid */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5 border-b pb-1">
-                  <span>👔</span> Upper Body Garment (Kurta / Koti / Blazer / Sherwani)
-                </h3>
-                <div className="grid grid-cols-4 gap-2 text-xs">
-                  <MeasurementCell label="Length (લંબાઈ)" value={selectedMeasurements.kurta_length} />
-                  <MeasurementCell label="Chest (છાતી)" value={selectedMeasurements.chest} />
-                  <MeasurementCell label="Waist (કમર)" value={selectedMeasurements.waist} />
-                  <MeasurementCell label="Hips (સીટ)" value={selectedMeasurements.hips} />
-                  <MeasurementCell label="Shoulder (શોલ્ડર)" value={selectedMeasurements.shoulder} />
-                  <MeasurementCell label="Sleeve (બાઈ)" value={selectedMeasurements.sleeve_length} />
-                  <MeasurementCell label="Sleeve Opening (બાઈ મોરી)" value={selectedMeasurements.sleeve_opening} />
-                  <MeasurementCell label="Collar (કોલર)" value={selectedMeasurements.collar_neck} />
-                  <MeasurementCell label="Biceps (મુંઢો)" value={selectedMeasurements.biceps} />
-                </div>
-              </div>
-
-              {/* Lower Body Measurement Grid */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5 border-b pb-1">
-                  <span>👖</span> Lower Body Garment (Pant / Pyjama)
-                </h3>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <MeasurementCell label="Pant Length (લંબાઈ)" value={selectedMeasurements.pant_length} />
-                  <MeasurementCell label="Pant Waist (કમર)" value={selectedMeasurements.pant_waist} />
-                  <MeasurementCell label="Seat / Hips (સીટ)" value={selectedMeasurements.pant_hips} />
-                  <MeasurementCell label="Thigh (ઝાંગ)" value={selectedMeasurements.thigh} />
-                  <MeasurementCell label="Knee (ઘૂંટણ)" value={selectedMeasurements.knee} />
-                  <MeasurementCell label="Galo (ગાળો)" value={selectedMeasurements.galo} />
-                  <MeasurementCell label="Bottom Mori (મોરી)" value={selectedMeasurements.bottom_mori} />
-                </div>
-              </div>
-
-
-
-              {/* Reference Images & Attachments */}
-              {selectedOrder.attachments && selectedOrder.attachments.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-xs font-bold text-primary uppercase tracking-wider border-b pb-1 flex items-center gap-1.5">
-                    <span>📸</span> Reference Images ({selectedOrder.attachments.length})
-                  </h3>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 text-xs">
-                    {selectedOrder.attachments.map((att) => (
-                      <div key={att.id} className="border rounded-lg p-1.5 bg-card text-center space-y-1" style={{ borderColor: "hsl(var(--border))" }}>
-                        <div className="w-full h-20 rounded bg-black/5 overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={att.file_url} alt={att.file_name || "Ref"} className="w-full h-full object-cover" />
-                        </div>
-                        <p className="text-[10px] font-medium truncate text-foreground">{att.file_name || "Reference"}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Design & Fabric Notes */}
-              {selectedOrder.notes && (
-                <div className="space-y-1.5 border-t pt-2" style={{ borderColor: "hsl(var(--border))" }}>
-                  <h3 className="text-xs font-bold text-primary uppercase tracking-wider border-b pb-1 flex items-center gap-1.5">
-                    <span>📋</span> Fabric & Design Points (મટીરીયલ અને ડિઝાઈન પોઈન્ટ્સ)
-                  </h3>
-                  <div className="bg-muted/40 p-3 rounded-lg border" style={{ borderColor: "hsl(var(--border))" }}>
-                    <BulletPointsList text={selectedOrder.notes} />
-                  </div>
-                </div>
-              )}
-
-              {/* Ordered Items Summary Table */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider border-b pb-1">
-                  Order Items Summary
-                </h3>
-                <div className="border rounded-lg overflow-hidden text-xs" style={{ borderColor: "hsl(var(--border))" }}>
-                  <table className="w-full text-left">
-                    <thead className="bg-muted font-semibold text-muted-foreground border-b" style={{ borderColor: "hsl(var(--border))" }}>
-                      <tr>
-                        <th className="p-2">Item Type</th>
-                        <th className="p-2">Qty</th>
-                        <th className="p-2">Fabric Details</th>
-                        <th className="p-2">Special Instructions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y" style={{ borderColor: "hsl(var(--border))" }}>
-                      {(selectedOrder.order_items || []).map((item, idx) => (
-                        <tr key={idx}>
-                          <td className="p-2 font-medium">{ITEM_TYPE_LABELS[item.item_type]}</td>
-                          <td className="p-2">{item.quantity}</td>
-                          <td className="p-2">{item.fabric_details || "-"}</td>
-                          <td className="p-2">{item.special_instructions || "-"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Print Footer */}
-              <div className="pt-4 border-t flex justify-between items-end text-xs text-muted-foreground" style={{ borderColor: "hsl(var(--border))" }}>
-                <div>
-                  <p>Aahman Ethnic Wear OMS</p>
-                  <p className="text-[10px]">Printed on {format(new Date(), "dd/MM/yyyy HH:mm")}</p>
-                </div>
-                <div className="text-right font-medium">
-                  Tailor Master Signature: ___________________
-                </div>
-              </div>
-            </div>
-
+            {/* Printable Job Sheet Content */}
+            <PrintableJobSheet order={selectedOrder} />
           </div>
         </div>
       )}
     </div>
-  );
-}
 
-function MeasurementCell({ label, value }: { label: string; value?: string }) {
-  return (
-    <div className="border rounded-lg p-2 bg-card text-center space-y-0.5" style={{ borderColor: "hsl(var(--border))" }}>
-      <p className="text-[11px] text-muted-foreground font-medium">{label}</p>
-      <p className="font-bold text-sm text-foreground">{value && value.trim() ? value : "—"}</p>
+    {/* Standalone Printable Area for Direct Printing */}
+    <div className="hidden print:block">
+      {selectedOrder && <PrintableJobSheet order={selectedOrder} />}
     </div>
+    </>
   );
 }

@@ -347,8 +347,81 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   outline-offset: 2px;
 }
 
-/* Print styles */
+/* Comprehensive Bulletproof Print Styles */
 @media print {
-  .sidebar-nav-item, header, nav { display: none !important; }
-  .stat-card { break-inside: avoid; }
+  /* Hide all web app navigation, headers, sidebars, buttons, toasts, and non-printable chrome */
+  nav,
+  header,
+  aside,
+  .sidebar,
+  .sidebar-nav-item,
+  .print\:hidden,
+  .no-print,
+  button,
+  footer,
+  [role="status"] {
+    display: none !important;
+  }
+
+  /* Reset global document backgrounds and fonts for printing */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Unconstrain container layout wrappers */
+  main, .max-w-5xl, .max-w-7xl, .container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Set A4 portrait page margins */
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm 8mm 10mm;
+  }
+
+  /* Printable container styling */
+  .printable-job-sheet, .printable-sheet, #printable-measurement-sheet {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Fix for fixed modal overlays during print */
+  .fixed, .inset-0 {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Prevent bad page splits inside tables, cards, measurement grids */
+  .print-card,
+  .printable-job-sheet,
+  tr,
+  table,
+  .measurement-grid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Ensure sharp black borders in print */
+  .border, th, td {
+    border-color: #000000 !important;
+  }
 }
