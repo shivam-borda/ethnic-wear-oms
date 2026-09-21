@@ -205,7 +205,6 @@ export interface GarmentMeasurements {
   pant_hips?: string;
   thigh?: string;
   knee?: string;
-  ganlo?: string;
   galo?: string;
   bottom_mori?: string;
   notes?: string;

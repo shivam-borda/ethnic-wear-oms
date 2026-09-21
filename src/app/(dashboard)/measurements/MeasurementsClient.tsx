@@ -158,17 +158,17 @@ export default function MeasurementsClient({ initialOrders }: Props) {
                   <div className="mt-4 pt-3 border-t grid grid-cols-2 gap-2 text-xs" style={{ borderColor: "hsl(var(--border))" }}>
                     {/* Upper */}
                     <div className="bg-muted/50 p-2 rounded-lg space-y-0.5">
-                      <p className="font-semibold text-primary">👔 Upper</p>
-                      <p className="text-muted-foreground">Len: <span className="font-medium text-foreground">{m.kurta_length || "-"}</span></p>
-                      <p className="text-muted-foreground">Chest: <span className="font-medium text-foreground">{m.chest || "-"}</span></p>
-                      <p className="text-muted-foreground">Shoulder: <span className="font-medium text-foreground">{m.shoulder || "-"}</span></p>
+                      <p className="font-semibold text-primary">👔 Upper (ઉપર)</p>
+                      <p className="text-muted-foreground">Len (લંબાઈ): <span className="font-medium text-foreground">{m.kurta_length || "-"}</span></p>
+                      <p className="text-muted-foreground">Chest (છાતી): <span className="font-medium text-foreground">{m.chest || "-"}</span></p>
+                      <p className="text-muted-foreground">Shoulder (શોલ્ડર): <span className="font-medium text-foreground">{m.shoulder || "-"}</span></p>
                     </div>
                     {/* Lower */}
                     <div className="bg-muted/50 p-2 rounded-lg space-y-0.5">
-                      <p className="font-semibold text-primary">👖 Lower</p>
-                      <p className="text-muted-foreground">Len: <span className="font-medium text-foreground">{m.pant_length || "-"}</span></p>
-                      <p className="text-muted-foreground">Waist: <span className="font-medium text-foreground">{m.pant_waist || "-"}</span></p>
-                      <p className="text-muted-foreground">Mori: <span className="font-medium text-foreground">{m.bottom_mori || "-"}</span></p>
+                      <p className="font-semibold text-primary">👖 Lower (નીચે)</p>
+                      <p className="text-muted-foreground">Len (લંબાઈ): <span className="font-medium text-foreground">{m.pant_length || "-"}</span></p>
+                      <p className="text-muted-foreground">Waist (કમર): <span className="font-medium text-foreground">{m.pant_waist || "-"}</span></p>
+                      <p className="text-muted-foreground">Mori (મોરી): <span className="font-medium text-foreground">{m.bottom_mori || "-"}</span></p>
                     </div>
                   </div>
                 </div>
@@ -308,7 +308,6 @@ export default function MeasurementsClient({ initialOrders }: Props) {
                   <MeasurementCell label="Seat / Hips (સીટ)" value={selectedMeasurements.pant_hips} />
                   <MeasurementCell label="Thigh (ઝાંગ)" value={selectedMeasurements.thigh} />
                   <MeasurementCell label="Knee (ઘૂંટણ)" value={selectedMeasurements.knee} />
-                  <MeasurementCell label="Ganlo (ગંદલો)" value={selectedMeasurements.ganlo} />
                   <MeasurementCell label="Galo (ગાળો)" value={selectedMeasurements.galo} />
                   <MeasurementCell label="Bottom Mori (મોરી)" value={selectedMeasurements.bottom_mori} />
                 </div>

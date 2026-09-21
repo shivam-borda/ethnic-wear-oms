@@ -205,7 +205,6 @@ export default function CreateOrderClient({
     pant_hips: initialMeasurements.pant_hips || "",
     thigh: initialMeasurements.thigh || "",
     knee: initialMeasurements.knee || "",
-    ganlo: initialMeasurements.ganlo || "",
     galo: initialMeasurements.galo || "",
     bottom_mori: initialMeasurements.bottom_mori || "",
     notes: initialMeasurements.notes || "",
@@ -777,17 +776,7 @@ export default function CreateOrderClient({
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Ganlo (ગંદલો)</label>
-                  <input
-                    type="text"
-                    value={measurements.ganlo || ""}
-                    onChange={(e) => updateMeasurement("ganlo", e.target.value)}
-                    placeholder="e.g. 21"
-                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
-                    style={{ borderColor: "hsl(var(--border))" }}
-                  />
-                </div>
+
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1">Galo / Crotch (ગાળો)</label>
                   <input

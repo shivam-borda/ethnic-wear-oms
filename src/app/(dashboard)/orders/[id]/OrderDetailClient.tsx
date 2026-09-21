@@ -275,15 +275,15 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
               <div className="space-y-2">
                 <p className="text-xs font-bold text-primary uppercase tracking-wide">👔 Upper Body Garment</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                  {m.kurta_length && <div className="bg-muted/50 p-2 rounded border">Length: <span className="font-bold">{m.kurta_length}</span></div>}
-                  {m.chest && <div className="bg-muted/50 p-2 rounded border">Chest: <span className="font-bold">{m.chest}</span></div>}
-                  {m.waist && <div className="bg-muted/50 p-2 rounded border">Waist: <span className="font-bold">{m.waist}</span></div>}
-                  {m.hips && <div className="bg-muted/50 p-2 rounded border">Hips: <span className="font-bold">{m.hips}</span></div>}
-                  {m.shoulder && <div className="bg-muted/50 p-2 rounded border">Shoulder: <span className="font-bold">{m.shoulder}</span></div>}
-                  {m.sleeve_length && <div className="bg-muted/50 p-2 rounded border">Sleeve: <span className="font-bold">{m.sleeve_length}</span></div>}
-                  {m.sleeve_opening && <div className="bg-muted/50 p-2 rounded border">Sleeve Mori: <span className="font-bold">{m.sleeve_opening}</span></div>}
-                  {m.collar_neck && <div className="bg-muted/50 p-2 rounded border">Collar: <span className="font-bold">{m.collar_neck}</span></div>}
-                  {m.biceps && <div className="bg-muted/50 p-2 rounded border">Biceps: <span className="font-bold">{m.biceps}</span></div>}
+                  {m.kurta_length && <div className="bg-muted/50 p-2 rounded border">Length (લંબાઈ): <span className="font-bold">{m.kurta_length}</span></div>}
+                  {m.chest && <div className="bg-muted/50 p-2 rounded border">Chest (છાતી): <span className="font-bold">{m.chest}</span></div>}
+                  {m.waist && <div className="bg-muted/50 p-2 rounded border">Waist (કમર): <span className="font-bold">{m.waist}</span></div>}
+                  {m.hips && <div className="bg-muted/50 p-2 rounded border">Seat/Hips (સીટ): <span className="font-bold">{m.hips}</span></div>}
+                  {m.shoulder && <div className="bg-muted/50 p-2 rounded border">Shoulder (શોલ્ડર): <span className="font-bold">{m.shoulder}</span></div>}
+                  {m.sleeve_length && <div className="bg-muted/50 p-2 rounded border">Sleeve (બાઈ): <span className="font-bold">{m.sleeve_length}</span></div>}
+                  {m.sleeve_opening && <div className="bg-muted/50 p-2 rounded border">Sleeve Mori (બાઈ મોરી): <span className="font-bold">{m.sleeve_opening}</span></div>}
+                  {m.collar_neck && <div className="bg-muted/50 p-2 rounded border">Collar (કોલર): <span className="font-bold">{m.collar_neck}</span></div>}
+                  {m.biceps && <div className="bg-muted/50 p-2 rounded border">Biceps (મુંઢો): <span className="font-bold">{m.biceps}</span></div>}
                 </div>
               </div>
             )}
@@ -292,14 +292,13 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
               <div className="space-y-2 pt-2">
                 <p className="text-xs font-bold text-primary uppercase tracking-wide">👖 Lower Body Garment</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                  {m.pant_length && <div className="bg-muted/50 p-2 rounded border">Pant Length: <span className="font-bold">{m.pant_length}</span></div>}
-                  {m.pant_waist && <div className="bg-muted/50 p-2 rounded border">Pant Waist: <span className="font-bold">{m.pant_waist}</span></div>}
-                  {m.pant_hips && <div className="bg-muted/50 p-2 rounded border">Seat/Hips: <span className="font-bold">{m.pant_hips}</span></div>}
-                  {m.thigh && <div className="bg-muted/50 p-2 rounded border">Thigh: <span className="font-bold">{m.thigh}</span></div>}
-                  {m.knee && <div className="bg-muted/50 p-2 rounded border">Knee: <span className="font-bold">{m.knee}</span></div>}
-                  {m.ganlo && <div className="bg-muted/50 p-2 rounded border">Ganlo: <span className="font-bold">{m.ganlo}</span></div>}
-                  {m.galo && <div className="bg-muted/50 p-2 rounded border">Galo: <span className="font-bold">{m.galo}</span></div>}
-                  {m.bottom_mori && <div className="bg-muted/50 p-2 rounded border">Mori: <span className="font-bold">{m.bottom_mori}</span></div>}
+                  {m.pant_length && <div className="bg-muted/50 p-2 rounded border">Pant Length (લંબાઈ): <span className="font-bold">{m.pant_length}</span></div>}
+                  {m.pant_waist && <div className="bg-muted/50 p-2 rounded border">Pant Waist (કમર): <span className="font-bold">{m.pant_waist}</span></div>}
+                  {m.pant_hips && <div className="bg-muted/50 p-2 rounded border">Seat/Hips (સીટ): <span className="font-bold">{m.pant_hips}</span></div>}
+                  {m.thigh && <div className="bg-muted/50 p-2 rounded border">Thigh (ઝાંગ): <span className="font-bold">{m.thigh}</span></div>}
+                  {m.knee && <div className="bg-muted/50 p-2 rounded border">Knee (ઘૂંટણ): <span className="font-bold">{m.knee}</span></div>}
+                  {m.galo && <div className="bg-muted/50 p-2 rounded border">Galo (ગાળો): <span className="font-bold">{m.galo}</span></div>}
+                  {m.bottom_mori && <div className="bg-muted/50 p-2 rounded border">Mori (મોરી): <span className="font-bold">{m.bottom_mori}</span></div>}
                 </div>
               </div>
             )}
