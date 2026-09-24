@@ -2,7 +2,7 @@
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Order } from "@/types";
 import { formatDate, getDeliveryLabel, getCurrentStageLabel } from "@/lib/utils";
 import { toast } from "sonner";
@@ -18,8 +18,23 @@ function getStatusStyle(status: string) {
   return { bg: "hsl(0,60%,50%,0.1)", color: "hsl(0,60%,40%)" };
 }
 
+
+const FILTER_LABELS: Record<string, string> = {
+  todayOrders: "Today's Orders",
+  todayDeliveries: "Today's Deliveries",
+  tomorrowDeliveries: "Tomorrow's Deliveries",
+  next7Days: "Next 7 Days Deliveries",
+  pendingStitching: "Pending Stitching Orders",
+  pendingWork: "Pending Hand Work Orders",
+  active: "Active Orders",
+  delivered: "Delivered Orders",
+  cancelled: "Cancelled Orders",
+};
+
 export default function OrdersClient({ initialOrders }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlFilter = searchParams.get("filter") || "";
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -44,6 +59,43 @@ export default function OrdersClient({ initialOrders }: Props) {
     if (statusFilter !== "all") {
       result = result.filter((o) => o.status === statusFilter);
     }
+    if (urlFilter) {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+      const next7 = new Date();
+      next7.setDate(next7.getDate() + 7);
+      const next7Str = next7.toISOString().split("T")[0];
+
+      if (urlFilter === "todayOrders") {
+        result = result.filter((o) => o.order_date === todayStr);
+      } else if (urlFilter === "todayDeliveries") {
+        result = result.filter((o) => o.delivery_date === todayStr);
+      } else if (urlFilter === "tomorrowDeliveries") {
+        result = result.filter((o) => o.delivery_date === tomorrowStr);
+      } else if (urlFilter === "next7Days") {
+        result = result.filter(
+          (o) => o.delivery_date && o.delivery_date >= todayStr && o.delivery_date <= next7Str
+        );
+      } else if (urlFilter === "pendingStitching") {
+        result = result.filter((o) => {
+          const items = o.order_items || [];
+          return items.some(
+            (i) => i.item_progress?.stitching_status === "pending" || i.item_progress?.stitching_status === "in_progress"
+          );
+        });
+      } else if (urlFilter === "pendingWork") {
+        result = result.filter((o) => {
+          const items = o.order_items || [];
+          return items.some(
+            (i) => i.item_progress?.work_status === "pending" || i.item_progress?.work_status === "in_progress"
+          );
+        });
+      } else if (urlFilter === "active" || urlFilter === "delivered" || urlFilter === "cancelled") {
+        result = result.filter((o) => o.status === urlFilter);
+      }
+    }
     result.sort((a, b) => {
       let av: string | number = 0, bv: string | number = 0;
       if (sortField === "order_number") { av = a.order_number; bv = b.order_number; }
@@ -56,7 +108,7 @@ export default function OrdersClient({ initialOrders }: Props) {
       return 0;
     });
     return result;
-  }, [orders, search, statusFilter, sortField, sortDir]);
+  }, [orders, search, statusFilter, sortField, sortDir, urlFilter]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -80,6 +132,17 @@ export default function OrdersClient({ initialOrders }: Props) {
 
   return (
     <div className="space-y-5">
+      {urlFilter && FILTER_LABELS[urlFilter] && (
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <span className="text-base">📊</span>
+            <span>Dashboard Widget Filter: <strong className="text-primary font-bold">{FILTER_LABELS[urlFilter]}</strong> ({filtered.length} order{filtered.length !== 1 ? "s" : ""})</span>
+          </div>
+          <Link href="/orders" prefetch={true} className="px-2.5 py-1 rounded-md bg-white border shadow-sm text-xs font-bold text-foreground hover:bg-muted transition-colors">
+            ✕ Clear Filter
+          </Link>
+        </div>
+      )}
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-48 relative">

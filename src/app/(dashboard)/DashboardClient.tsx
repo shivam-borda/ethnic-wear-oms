@@ -30,7 +30,10 @@ function StatCard({
   icon,
   color,
   sub,
+  filterParam,
 }: {
+  filterParam?: string;
+  
   title: string;
   value: number;
   icon: string;
@@ -38,7 +41,11 @@ function StatCard({
   sub?: string;
 }) {
   return (
-    <div className="stat-card">
+    <Link
+      href={`/orders?filter=${filterParam}`}
+      prefetch={true}
+      className="stat-card cursor-pointer group hover:scale-[1.02] hover:shadow-md transition-all duration-200 block"
+    >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -64,7 +71,7 @@ function StatCard({
           {icon}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -75,6 +82,7 @@ const statCards = [
     icon: "📋",
     color: "hsl(345,70%,28%)",
     sub: "New orders today",
+    filterParam: "todayOrders",
   },
   {
     key: "todayDeliveries" as keyof DashboardStats,
@@ -82,6 +90,7 @@ const statCards = [
     icon: "🚚",
     color: "hsl(25,80%,35%)",
     sub: "Due for delivery",
+    filterParam: "todayDeliveries",
   },
   {
     key: "nextDayDeliveries" as keyof DashboardStats,
@@ -89,6 +98,7 @@ const statCards = [
     icon: "📅",
     color: "hsl(40,85%,40%)",
     sub: "Prepare today",
+    filterParam: "tomorrowDeliveries",
   },
   {
     key: "next7DaysDeliveries" as keyof DashboardStats,
@@ -96,6 +106,7 @@ const statCards = [
     icon: "🗓️",
     color: "hsl(200,60%,40%)",
     sub: "Upcoming deliveries",
+    filterParam: "next7Days",
   },
   {
     key: "pendingStitching" as keyof DashboardStats,
@@ -103,6 +114,7 @@ const statCards = [
     icon: "🧵",
     color: "hsl(280,50%,40%)",
     sub: "Items in stitching",
+    filterParam: "pendingStitching",
   },
   {
     key: "pendingWork" as keyof DashboardStats,
@@ -110,6 +122,7 @@ const statCards = [
     icon: "✂️",
     color: "hsl(15,60%,40%)",
     sub: "Items in work stage",
+    filterParam: "pendingWork",
   },
   {
     key: "totalActiveOrders" as keyof DashboardStats,
@@ -117,6 +130,7 @@ const statCards = [
     icon: "⚡",
     color: "hsl(345,70%,28%)",
     sub: "Currently in production",
+    filterParam: "active",
   },
   {
     key: "totalDeliveredOrders" as keyof DashboardStats,
@@ -124,6 +138,7 @@ const statCards = [
     icon: "✅",
     color: "hsl(140,50%,35%)",
     sub: "Successfully completed",
+    filterParam: "delivered",
   },
 ];
 
@@ -177,6 +192,7 @@ export default function DashboardClient({
             icon={card.icon}
             color={card.color}
             sub={card.sub}
+            filterParam={card.filterParam}
           />
         ))}
       </div>

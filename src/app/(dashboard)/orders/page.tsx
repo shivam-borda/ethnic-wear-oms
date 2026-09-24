@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import OrdersClient from "./OrdersClient";
 import type { Order } from "@/types";
@@ -9,5 +10,9 @@ export default async function OrdersPage() {
     .select(`*, party:parties(name, phone), order_items(*, item_progress(*))`)
     .order("created_at", { ascending: false });
 
-  return <OrdersClient initialOrders={(orders || []) as Order[]} />;
+  return (
+    <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading orders list...</div>}>
+      <OrdersClient initialOrders={(orders || []) as Order[]} />
+    </Suspense>
+  );
 }
