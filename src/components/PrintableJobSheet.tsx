@@ -21,11 +21,8 @@ export function PrintableJobSheet({ order }: PrintableJobSheetProps) {
           </div>
           <div>
             <h1 className="text-xl font-bold uppercase tracking-wider text-black font-serif">
-              AAHMAN ETHNIC WEAR & TAILORS
+              AAHMAN ETHNIC
             </h1>
-            <p className="text-[11px] font-semibold text-gray-700">
-              Bespoke Tailoring & Garment Production Job Sheet
-            </p>
           </div>
         </div>
         <div className="text-right border-l-2 border-black pl-4">

@@ -126,6 +126,7 @@ export default function Sidebar() {
                 <div className="ml-4 mt-0.5 space-y-0.5 border-l pl-3" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
                   {item.children.map((child) => (
                     <Link
+                      prefetch={true}
                       key={child.id}
                       id={`nav-${child.id}`}
                       href={child.href}
@@ -145,6 +146,7 @@ export default function Sidebar() {
             </div>
           ) : (
             <Link
+              prefetch={true}
               key={item.id}
               id={`nav-${item.id}`}
               href={item.href}

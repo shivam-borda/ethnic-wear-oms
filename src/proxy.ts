@@ -2,9 +2,37 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function proxy(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Fast skip for static files & Next.js internal assets
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon') ||
+    pathname.match(/\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$/)
+  ) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
+
+  const isAuthPage = pathname.startsWith('/login');
+  const allCookies = request.cookies.getAll();
+  const hasAuthToken = allCookies.some(c => c.name.includes('auth-token') || c.name.includes('sb-'));
+
+  // If unauthenticated and trying to access protected route -> fast redirect
+  if (!hasAuthToken && !isAuthPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  // Fast path for RSC prefetch calls when auth token exists to eliminate navigation lag
+  const isPrefetch = request.headers.get('purpose') === 'prefetch' || searchParams.has('_rsc');
+  if (isPrefetch && hasAuthToken) {
+    return supabaseResponse;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,12 +61,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login');
-  const isPublicAsset =
-    request.nextUrl.pathname.startsWith('/_next') ||
-    request.nextUrl.pathname.startsWith('/favicon');
-
-  if (!user && !isAuthPage && !isPublicAsset) {
+  if (!user && !isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
@@ -55,6 +78,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
