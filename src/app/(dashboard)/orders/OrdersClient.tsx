@@ -1,4 +1,6 @@
 "use client";
+import { PrintableJobSheet } from "@/components/PrintableJobSheet";
+import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS } from "@/types";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { useState, useMemo } from "react";
 import Link from "next/link";
@@ -36,6 +38,9 @@ export default function OrdersClient({ initialOrders }: Props) {
   const searchParams = useSearchParams();
   const urlFilter = searchParams.get("filter") || "";
   const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [selectedOrderForPrint, setSelectedOrderForPrint] = useState<Order | null>(null);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<string>("created_at");
@@ -118,6 +123,11 @@ export default function OrdersClient({ initialOrders }: Props) {
     else { setSortField(field); setSortDir("asc"); }
   };
 
+  const handlePrintSheet = (order: Order) => {
+    setSelectedOrderForPrint(order);
+    setIsPrintModalOpen(true);
+  };
+
   const handleDelete = async (id: string, orderNo: string) => {
     if (!confirm(`Delete order ${orderNo}? This cannot be undone.`)) return;
     const supabase = createClient();
@@ -172,6 +182,28 @@ export default function OrdersClient({ initialOrders }: Props) {
             searchPlaceholder="Search status..."
           />
         </div>
+        {/* View Mode Toggle */}
+        <div className="flex border rounded-lg overflow-hidden bg-card text-xs font-semibold" style={{ borderColor: "hsl(var(--border))" }}>
+          <button
+            type="button"
+            onClick={() => setViewMode("cards")}
+            className={`px-3 py-2 flex items-center gap-1.5 transition-colors ${
+              viewMode === "cards" ? "bg-primary text-white font-bold" : "hover:bg-muted text-muted-foreground"
+            }`}
+          >
+            <span>🎴</span> Cards View
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("table")}
+            className={`px-3 py-2 flex items-center gap-1.5 transition-colors ${
+              viewMode === "table" ? "bg-primary text-white font-bold" : "hover:bg-muted text-muted-foreground"
+            }`}
+          >
+            <span>📑</span> Table View
+          </button>
+        </div>
+
         <Link
           href="/orders/new"
           id="orders-new-btn"
