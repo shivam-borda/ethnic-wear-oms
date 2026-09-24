@@ -38,9 +38,9 @@ export default function DashboardLayoutClient({
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar (Collapsible) */}
+      {/* Desktop Sidebar (Sticky Fixed Left) */}
       <div
-        className={`hidden lg:block transition-all duration-300 ease-in-out flex-shrink-0 z-30 ${
+        className={`hidden lg:block sticky top-0 h-screen flex-shrink-0 z-30 transition-all duration-300 ease-in-out ${
           isCollapsed ? "w-0 opacity-0 pointer-events-none overflow-hidden" : "w-64 opacity-100"
         }`}
       >

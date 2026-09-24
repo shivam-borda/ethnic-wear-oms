@@ -66,12 +66,12 @@ export default function Sidebar({ isCollapsed, onToggle, onItemClick }: SidebarP
 
   return (
     <aside
-      className="flex flex-col w-64 min-h-screen"
+      className="flex flex-col w-64 h-full"
       style={{ background: "hsl(var(--sidebar-background))" }}
     >
       {/* Logo */}
       <div
-        className="flex items-center justify-between px-5 py-4 border-b"
+        className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0"
         style={{ borderColor: "hsl(var(--sidebar-border))" }}
       >
         <div className="flex items-center gap-3">
@@ -112,7 +112,7 @@ export default function Sidebar({ isCollapsed, onToggle, onItemClick }: SidebarP
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map((item) =>
           item.children ? (
             <div key={item.id}>
@@ -181,7 +181,7 @@ export default function Sidebar({ isCollapsed, onToggle, onItemClick }: SidebarP
 
       {/* Bottom actions */}
       <div
-        className="px-3 py-4 border-t space-y-1"
+        className="px-3 py-4 border-t space-y-1 flex-shrink-0"
         style={{ borderColor: "hsl(var(--sidebar-border))" }}
       >
         <button
