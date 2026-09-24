@@ -30,7 +30,17 @@ function getBreadcrumbs(pathname: string) {
   return crumbs;
 }
 
-export default function Header() {
+interface HeaderProps {
+  isSidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
+  onToggleMobileMenu?: () => void;
+}
+
+export default function Header({
+  isSidebarCollapsed,
+  onToggleSidebar,
+  onToggleMobileMenu,
+}: HeaderProps) {
   const pathname = usePathname();
   const crumbs = getBreadcrumbs(pathname);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -59,7 +69,28 @@ export default function Header() {
       style={{ borderColor: "hsl(var(--border))" }}
     >
       {/* Breadcrumb + Title */}
-      <div>
+      <div className="flex items-center gap-3">
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            className="hidden lg:flex items-center justify-center w-9 h-9 rounded-lg border bg-background hover:bg-muted text-foreground transition-all shadow-sm flex-shrink-0"
+            title={isSidebarCollapsed ? "Show Sidebar" : "Hide Sidebar (Full Screen Mode)"}
+          >
+            <span className="text-sm font-bold">{isSidebarCollapsed ? "📖" : "◀"}</span>
+          </button>
+        )}
+
+        {onToggleMobileMenu && (
+          <button
+            onClick={onToggleMobileMenu}
+            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg border bg-background hover:bg-muted text-foreground transition-all shadow-sm flex-shrink-0"
+            title="Toggle Menu"
+          >
+            <span className="text-base font-bold">☰</span>
+          </button>
+        )}
+
+        <div>
         {crumbs.length > 1 && (
           <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-0.5">
             {crumbs.map((crumb, i) => (
@@ -89,6 +120,7 @@ export default function Header() {
         >
           {pageTitle}
         </h1>
+        </div>
       </div>
 
       {/* Right side */}

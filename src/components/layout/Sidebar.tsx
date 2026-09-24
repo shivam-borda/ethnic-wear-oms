@@ -34,7 +34,13 @@ const navItems: NavItem[] = [
   { id: "settings", label: "Settings", icon: "⚙️", href: "/settings" },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+  onItemClick?: () => void;
+}
+
+export default function Sidebar({ isCollapsed, onToggle, onItemClick }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [openGroups, setOpenGroups] = useState<string[]>(["orders"]);
@@ -65,33 +71,44 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div
-        className="flex items-center gap-3 px-5 py-4 border-b"
+        className="flex items-center justify-between px-5 py-4 border-b"
         style={{ borderColor: "hsl(var(--sidebar-border))" }}
       >
-        <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center flex-shrink-0 shadow-sm">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo.png"
-            alt="Aahman Logo"
-            className="w-full h-full object-contain"
-          />
-        </div>
-        <div>
-          <div
-            className="font-bold text-xl leading-none text-white"
-            style={{
-              fontFamily: "Cormorant Garamond, serif",
-            }}
-          >
-            Aahman
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center flex-shrink-0 shadow-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="Aahman Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
-          <div
-            className="text-xs mt-0.5 font-medium"
-            style={{ color: "hsl(var(--sidebar-foreground) / 0.65)" }}
-          >
-            Ethnic Wear ERP
+          <div>
+            <div
+              className="font-bold text-xl leading-none text-white"
+              style={{
+                fontFamily: "Cormorant Garamond, serif",
+              }}
+            >
+              Aahman
+            </div>
+            <div
+              className="text-xs mt-0.5 font-medium"
+              style={{ color: "hsl(var(--sidebar-foreground) / 0.65)" }}
+            >
+              Ethnic Wear ERP
+            </div>
           </div>
         </div>
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            className="w-8 h-8 rounded-lg border border-white/20 text-white hover:bg-white/10 flex items-center justify-center text-xs transition-colors flex-shrink-0"
+            title={isCollapsed ? "Show Sidebar" : "Hide Sidebar (Full Screen)"}
+          >
+            {isCollapsed ? "▶" : "◀"}
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -101,7 +118,7 @@ export default function Sidebar() {
             <div key={item.id}>
               <button
                 id={`nav-${item.id}`}
-                onClick={() => toggleGroup(item.id)}
+                onClick={() => { toggleGroup(item.id); onItemClick?.(); }}
                 className={cn(
                   "sidebar-nav-item w-full justify-between",
                   item.children.some((c) => isActive(c.href)) && "active"
