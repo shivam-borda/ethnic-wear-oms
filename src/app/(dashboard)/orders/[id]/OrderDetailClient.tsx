@@ -1,4 +1,5 @@
 "use client";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
 import SearchableSelect from "@/components/ui/SearchableSelect";
@@ -72,6 +73,8 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
   const [updatingStage, setUpdatingStage] = useState<string | null>(null);
   const [deletingOrder, setDeletingOrder] = useState(false);
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [lightboxImages, setLightboxImages] = useState<{ url: string; title?: string }[]>([]);
 
   const handleStageUpdate = async (
     item: OrderItem,
@@ -328,7 +331,12 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
             {order.attachments.map((att) => (
               <div
                 key={att.id}
-                onClick={() => setPreviewImage({ url: att.file_url, title: att.file_name || "Reference Image" })}
+                onClick={() => {
+                  const allAtts = (order.attachments || []).map((a) => ({ url: a.file_url, title: a.file_name || "Reference Image" }));
+                  const foundIdx = allAtts.findIndex((a) => a.url === att.file_url);
+                  setLightboxImages(allAtts);
+                  setLightboxIndex(foundIdx >= 0 ? foundIdx : 0);
+                }}
                 className="group relative border rounded-xl overflow-hidden bg-background cursor-pointer hover:shadow-md transition-all flex flex-col"
                 style={{ borderColor: "hsl(var(--border))" }}
               >
@@ -377,14 +385,19 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
               {/* Fabric Image + Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {item.fabric_image_url && (
-                  <div className="md:col-span-1">
+                  <div className="md:col-span-1 cursor-pointer group relative rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }} onClick={() => {
+                    setLightboxImages([{ url: item.fabric_image_url!, title: `${ITEM_TYPE_LABELS[item.item_type]} Fabric Image` }]);
+                    setLightboxIndex(0);
+                  }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={item.fabric_image_url}
                       alt="Fabric"
-                      className="w-full h-32 object-cover rounded-lg border"
-                      style={{ borderColor: "hsl(var(--border))" }}
+                      className="w-full h-32 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
                     />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
+                      🔍 Full Screen
+                    </div>
                   </div>
                 )}
                 <div className={item.fabric_image_url ? "md:col-span-2" : "md:col-span-3"}>
@@ -477,6 +490,16 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
     <div className="hidden print:block">
       <PrintableJobSheet order={order} />
     </div>
+
+    {/* Full Screen Image Lightbox */}
+    {lightboxIndex !== null && (
+      <ImageLightbox
+        images={lightboxImages}
+        currentIndex={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onNavigate={(idx) => setLightboxIndex(idx)}
+      />
+    )}
     </>
   );
 }

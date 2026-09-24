@@ -1,3 +1,6 @@
+"use client";
+import { useState } from "react";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 import { format } from "date-fns";
 import type { Order } from "@/types";
 import { parseMeasurements, ITEM_TYPE_LABELS } from "@/types";
@@ -9,6 +12,7 @@ interface PrintableJobSheetProps {
 
 export function PrintableJobSheet({ order }: PrintableJobSheetProps) {
   const m = parseMeasurements(order.stitching_measurement_number);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   return (
     <div className="p-4 bg-white text-black text-xs font-sans space-y-4 printable-job-sheet">
@@ -158,17 +162,38 @@ export function PrintableJobSheet({ order }: PrintableJobSheetProps) {
             📸 Reference Images ({order.attachments.length})
           </div>
           <div className="grid grid-cols-4 gap-2 pt-1">
-            {order.attachments.map((att) => (
-              <div key={att.id} className="border border-gray-400 p-1 text-center bg-white">
-                <div className="w-full h-20 bg-gray-100 flex items-center justify-center overflow-hidden">
+            {order.attachments.map((att, idx) => (
+              <div
+                key={att.id || idx}
+                onClick={() => setLightboxIndex(idx)}
+                className="border border-gray-400 p-1 text-center bg-white cursor-pointer hover:border-black hover:shadow-sm transition-all"
+                title="Click to view full screen"
+              >
+                <div className="w-full h-20 bg-gray-100 flex items-center justify-center overflow-hidden relative group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={att.file_url} alt={att.file_name || "Ref"} className="w-full h-full object-contain" />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                    🔍 Full Screen
+                  </div>
                 </div>
                 <p className="text-[9px] font-semibold truncate mt-0.5">{att.file_name || "Reference"}</p>
               </div>
             ))}
           </div>
         </div>
+      )}
+
+      {/* Full Screen Image Lightbox */}
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          images={(order.attachments || []).map((att) => ({
+            url: att.file_url,
+            title: att.file_name || "Reference Image",
+          }))}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={(idx) => setLightboxIndex(idx)}
+        />
       )}
 
       {/* 7. Signatures & Footer Verification */}
