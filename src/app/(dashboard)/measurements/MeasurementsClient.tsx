@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import type { Order, GarmentMeasurements } from "@/types";
-import { parseMeasurements, ITEM_TYPE_LABELS } from "@/types";
+import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS } from "@/types";
 
 interface Props {
   initialOrders: Order[];
@@ -20,8 +20,17 @@ export default function MeasurementsClient({ initialOrders }: Props) {
   const ordersWithMeasurements = initialOrders.filter((order) => {
     if (!order.stitching_measurement_number) return false;
     const m = parseMeasurements(order.stitching_measurement_number);
-    // Check if contains slip or any measurement
-    return !!(m.slip_number || m.kurta_length || m.chest || m.pant_length || order.stitching_measurement_number);
+    return !!(
+      (m.slip_number && m.slip_number.trim() !== "" && !m.slip_number.trim().startsWith("{")) ||
+      m.kurta_length ||
+      m.chest ||
+      m.pant_length ||
+      m.waist ||
+      m.hips ||
+      m.shoulder ||
+      m.sleeve_length ||
+      m.pant_waist
+    );
   });
 
   const filteredOrders = ordersWithMeasurements.filter((order) => {
@@ -118,7 +127,7 @@ export default function MeasurementsClient({ initialOrders }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredOrders.map((order) => {
             const m = parseMeasurements(order.stitching_measurement_number);
-            const slipNo = m.slip_number || order.stitching_measurement_number || "N/A";
+            const slipNo = getCleanSlipNumber(order);
             const itemsSummary = (order.order_items || [])
               .map((i) => ITEM_TYPE_LABELS[i.item_type])
               .join(", ");

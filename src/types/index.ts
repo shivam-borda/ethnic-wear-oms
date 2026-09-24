@@ -214,10 +214,26 @@ export function parseMeasurements(raw?: string | null): GarmentMeasurements {
   if (!raw) return {};
   try {
     if (raw.trim().startsWith('{')) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.slip_number && parsed.slip_number.trim().startsWith('{')) {
+          parsed.slip_number = '';
+        }
+        return parsed;
+      }
     }
   } catch {}
-  return { slip_number: raw || '' };
+  return { slip_number: raw && !raw.trim().startsWith('{') ? raw : '' };
+}
+
+export function getCleanSlipNumber(order?: { stitching_measurement_number?: string | null; order_number?: string } | null): string {
+  if (!order) return 'N/A';
+  const m = parseMeasurements(order.stitching_measurement_number);
+  const slip = m.slip_number?.trim();
+  if (slip && !slip.startsWith('{')) {
+    return slip;
+  }
+  return order.order_number ? `SLIP-${order.order_number}` : 'N/A';
 }
 
 export interface OrderAttachmentFormData {

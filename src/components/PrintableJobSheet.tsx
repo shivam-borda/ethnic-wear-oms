@@ -3,7 +3,7 @@ import { useState } from "react";
 import ImageLightbox from "@/components/ui/ImageLightbox";
 import { format } from "date-fns";
 import type { Order } from "@/types";
-import { parseMeasurements, ITEM_TYPE_LABELS } from "@/types";
+import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS } from "@/types";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
 
 interface PrintableJobSheetProps {
@@ -31,7 +31,7 @@ export function PrintableJobSheet({ order }: PrintableJobSheetProps) {
         </div>
         <div className="text-right border-l-2 border-black pl-4">
           <div className="text-base font-extrabold text-black">
-            SLIP NO: {m.slip_number || order.order_number}
+            SLIP NO: {getCleanSlipNumber(order)}
           </div>
           <div className="text-xs font-bold text-gray-800">ORDER NO: {order.order_number}</div>
           {order.vyapar_order_number && (

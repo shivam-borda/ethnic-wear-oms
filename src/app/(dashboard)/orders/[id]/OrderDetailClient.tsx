@@ -12,6 +12,7 @@ import type { Order, OrderItem, Stage, StageStatus } from "@/types";
 import {
   ITEM_TYPE_LABELS,
   parseMeasurements,
+  getCleanSlipNumber,
   STAGE_LABELS,
   STATUS_LABELS,
 } from "@/types";
@@ -237,7 +238,7 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
           <InfoRow label="Order Date" value={formatDate(order.order_date)} />
           <InfoRow label="Delivery Date" value={formatDate(order.delivery_date)} highlight={!!order.delivery_date} />
           <InfoRow label="Vyapar Order No." value={order.vyapar_order_number} />
-          <InfoRow label="Measurement No." value={parseMeasurements(order.stitching_measurement_number).slip_number || order.stitching_measurement_number} />
+          <InfoRow label="Measurement No." value={getCleanSlipNumber(order)} />
           {order.notes && (
             <div className="pt-2 border-t" style={{ borderColor: "hsl(var(--border))" }}>
               <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block mb-1">Fabric, Material & Design Points:</span>
