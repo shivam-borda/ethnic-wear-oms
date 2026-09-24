@@ -14,6 +14,7 @@ import {
   Legend,
 } from "recharts";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { DashboardStats, MonthlyData, StatusData, Order } from "@/types";
 import { formatDate, getDeliveryLabel } from "@/lib/utils";
 
@@ -33,7 +34,6 @@ function StatCard({
   filterParam,
 }: {
   filterParam?: string;
-  
   title: string;
   value: number;
   icon: string;
@@ -128,26 +128,26 @@ const statCards = [
     key: "totalActiveOrders" as keyof DashboardStats,
     title: "Active Orders",
     icon: "⚡",
-    color: "hsl(345,70%,28%)",
-    sub: "Currently in production",
+    color: "hsl(140,50%,30%)",
+    sub: "In progress",
     filterParam: "active",
   },
   {
-    key: "totalDeliveredOrders" as keyof DashboardStats,
-    title: "Delivered Orders",
+    key: "deliveredThisMonth" as keyof DashboardStats,
+    title: "Delivered (Month)",
     icon: "✅",
-    color: "hsl(140,50%,35%)",
-    sub: "Successfully completed",
+    color: "hsl(220,60%,40%)",
+    sub: "Completed",
     filterParam: "delivered",
   },
 ];
 
 function getStatusColor(status: string) {
   if (status === "active")
-    return { bg: "hsl(345,70%,28%)/10", text: "hsl(345,70%,28%)" };
+    return { bg: "hsl(345,70%,28%,0.1)", text: "hsl(345,70%,28%)" };
   if (status === "delivered")
-    return { bg: "hsl(140,40%,40%)/10", text: "hsl(140,40%,30%)" };
-  return { bg: "hsl(0,60%,50%)/10", text: "hsl(0,60%,40%)" };
+    return { bg: "hsl(140,40%,40%,0.1)", text: "hsl(140,40%,30%)" };
+  return { bg: "hsl(0,60%,50%,0.1)", text: "hsl(0,60%,40%)" };
 }
 
 export default function DashboardClient({
@@ -156,29 +156,20 @@ export default function DashboardClient({
   statusData,
   recentOrders,
 }: Props) {
+  const router = useRouter();
+
   return (
     <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div
-        className="rounded-xl p-6 text-white relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, hsl(345,70%,22%) 0%, hsl(25,45%,30%) 100%)",
-        }}
-      >
-        <div
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-6xl opacity-20"
+      {/* Header */}
+      <div>
+        <h1
+          className="text-2xl font-bold text-foreground flex items-center gap-2"
+          style={{ fontFamily: "Cormorant Garamond, serif" }}
         >
-          🪡
-        </div>
-        <p
-          className="text-lg font-semibold"
-          style={{ fontFamily: "Cormorant Garamond, serif", color: "hsl(40,85%,80%)" }}
-        >
-          Good {new Date().getHours() < 12 ? "Morning" : new Date().getHours() < 17 ? "Afternoon" : "Evening"}!
-        </p>
-        <p className="text-sm mt-1" style={{ color: "hsl(40,40%,70%)" }}>
-          Here&apos;s your business overview for today.
+          <span>✨</span> Dashboard Overview
+        </h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Real-time snapshot of orders, deliveries, and production status
         </p>
       </div>
 
@@ -333,17 +324,21 @@ export default function DashboardClient({
                 recentOrders.map((order) => {
                   const sc = getStatusColor(order.status);
                   return (
-                    <tr key={order.id} className="data-table-row border-b last:border-0" style={{ borderColor: "hsl(var(--border))" }}>
+                    <tr
+                      key={order.id}
+                      onClick={() => router.push(`/orders/${order.id}`)}
+                      className="data-table-row border-b last:border-0 cursor-pointer hover:bg-muted/60 transition-colors"
+                      style={{ borderColor: "hsl(var(--border))" }}
+                    >
                       <td className="px-4 py-3">
-                        <Link
-                          href={`/orders/${order.id}`}
-                          className="font-semibold hover:underline"
+                        <span
+                          className="font-bold hover:underline"
                           style={{ color: "hsl(var(--primary))" }}
                         >
                           {order.order_number}
-                        </Link>
+                        </span>
                       </td>
-                      <td className="px-4 py-3 font-medium">
+                      <td className="px-4 py-3 font-medium text-foreground">
                         {order.party?.name || "—"}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
@@ -364,13 +359,13 @@ export default function DashboardClient({
                             : "—"}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-muted-foreground">
                         {order.order_items?.length || 0} item
                         {(order.order_items?.length || 0) !== 1 ? "s" : ""}
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
+                          className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize"
                           style={{
                             background: `${sc.bg}`,
                             color: sc.text,

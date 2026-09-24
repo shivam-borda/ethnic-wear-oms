@@ -266,3 +266,11 @@ CREATE POLICY "attachments_all"     ON public.attachments     FOR ALL TO authent
 -- CREATE POLICY "fabric_images_read" ON storage.objects FOR SELECT USING (bucket_id = 'fabric-images');
 -- CREATE POLICY "fabric_images_write" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'fabric-images');
 -- CREATE POLICY "fabric_images_delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'fabric-images');
+
+-- ============================================================
+-- 14. PERFORMANCE INDEXES (FAST NAVIGATION & QUERYING)
+-- ============================================================
+CREATE INDEX IF NOT EXISTS idx_oms_orders_created_at ON public.oms_orders (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_oms_orders_stitching_measurement ON public.oms_orders (created_at DESC) WHERE stitching_measurement_number IS NOT NULL AND stitching_measurement_number != '';
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items (order_id);
+CREATE INDEX IF NOT EXISTS idx_attachments_order_id ON public.attachments (order_id);
