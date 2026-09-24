@@ -1,7 +1,7 @@
 "use client";
 import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import type { Order, GarmentMeasurements } from "@/types";
@@ -15,6 +15,8 @@ export default function MeasurementsClient({ initialOrders }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 12;
 
   // Filter orders that have stitching_measurement_number / measurements
   const ordersWithMeasurements = initialOrders.filter((order) => {
@@ -65,6 +67,12 @@ export default function MeasurementsClient({ initialOrders }: Props) {
     ? parseMeasurements(selectedOrder.stitching_measurement_number)
     : {};
 
+  const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE) || 1;
+  const paginatedOrders = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredOrders.slice(start, start + PAGE_SIZE);
+  }, [filteredOrders, page]);
+
   return (
     <>
       <div className="space-y-6 print:hidden">
@@ -100,7 +108,7 @@ export default function MeasurementsClient({ initialOrders }: Props) {
         <input
           type="text"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
           placeholder="Search by Customer Name, Phone, Slip #, Order #..."
           className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
@@ -114,7 +122,9 @@ export default function MeasurementsClient({ initialOrders }: Props) {
         )}
       </div>
 
-      {/* Measurements Table / Cards */}
+
+
+  {/* Measurements Table / Cards */}
       {filteredOrders.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center text-muted-foreground space-y-3">
           <p className="text-4xl">📏</p>
@@ -125,7 +135,7 @@ export default function MeasurementsClient({ initialOrders }: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredOrders.map((order) => {
+          {paginatedOrders.map((order) => {
             const m = parseMeasurements(order.stitching_measurement_number);
             const slipNo = getCleanSlipNumber(order);
             const itemsSummary = (order.order_items || [])
@@ -204,6 +214,31 @@ export default function MeasurementsClient({ initialOrders }: Props) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl border bg-card shadow-sm text-xs" style={{ borderColor: "hsl(var(--border))" }}>
+          <span className="text-muted-foreground">
+            Page {page} of {totalPages} ({filteredOrders.length} slips)
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 rounded-lg border hover:bg-muted disabled:opacity-40 font-medium transition-colors"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 rounded-lg border hover:bg-muted disabled:opacity-40 font-medium transition-colors"
+            >
+              Next →
+            </button>
+          </div>
         </div>
       )}
 

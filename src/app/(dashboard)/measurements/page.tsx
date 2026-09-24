@@ -9,10 +9,12 @@ export default async function MeasurementsPage() {
   const { data: orders } = await supabase
     .from("oms_orders")
     .select(
-      "id, order_number, order_date, delivery_date, stitching_measurement_number, vyapar_order_number, status, phone, created_at, party:parties(name, phone, address, gst_number), attachments(id, file_url, file_name), order_items(id, item_type, quantity, fabric_details, special_instructions, notes, fabric_party:fabric_parties(name))"
+      "id, order_number, order_date, delivery_date, stitching_measurement_number, vyapar_order_number, status, phone, created_at, party:parties(name, phone), attachments(id, file_url, file_name), order_items(id, item_type, quantity, fabric_details, special_instructions, notes)"
     )
     .not("stitching_measurement_number", "is", null)
-    .order("created_at", { ascending: false });
+    .neq("stitching_measurement_number", "")
+    .order("created_at", { ascending: false })
+    .limit(100);
 
   return (
     <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading measurement slips...</div>}>
