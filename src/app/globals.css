@@ -367,7 +367,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   html, body {
     background: #ffffff !important;
     color: #000000 !important;
-    font-size: 11pt !important;
+    font-size: 10pt !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
@@ -386,42 +386,28 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   /* Set A4 portrait page margins */
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm 8mm 10mm;
+    margin: 6mm 8mm 6mm 8mm;
   }
 
-  /* Printable container styling */
-  .printable-job-sheet, .printable-sheet, #printable-measurement-sheet {
+  /* Force print area to display cleanly */
+  .print\:block {
     display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
     background: #ffffff !important;
     color: #000000 !important;
-  }
-
-  /* Fix for fixed modal overlays during print */
-  .fixed, .inset-0 {
-    position: static !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    z-index: 99999 !important;
   }
 
   /* Prevent bad page splits inside tables, cards, measurement grids */
-  .print-card,
   .printable-job-sheet,
   tr,
   table,
-  .measurement-grid {
+  .border {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-  }
-
-  /* Ensure sharp black borders in print */
-  .border, th, td {
     border-color: #000000 !important;
   }
 }
