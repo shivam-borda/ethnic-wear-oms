@@ -487,33 +487,43 @@ export default function OrdersClient({ initialOrders }: Props) {
 
       {/* Measurement Detail & Print Modal */}
       {isPrintModalOpen && selectedOrderForPrint && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto print:static print:p-0 print:bg-white">
-          <div className="bg-card rounded-2xl shadow-2xl max-w-3xl w-full p-6 space-y-6 relative my-8 print:shadow-none print:p-0 print:m-0 print:w-full print:max-w-none print:bg-white">
-            <div className="flex items-center justify-between border-b pb-4 print:hidden" style={{ borderColor: "hsl(var(--border))" }}>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">📐</span>
-                <h2 className="text-xl font-bold" style={{ fontFamily: "Cormorant Garamond, serif" }}>
-                  Tailor Job Sheet & Measurement Slip
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto print:static print:p-0 print:bg-white">
+          <div
+            className="bg-card rounded-2xl shadow-2xl max-w-3xl w-full p-3 sm:p-5 flex flex-col max-h-[92vh] sm:max-h-[90vh] my-auto relative print:shadow-none print:p-0 print:m-0 print:w-full print:max-w-none print:bg-white"
+            style={{ borderColor: "hsl(var(--border))" }}
+          >
+            {/* Top Modal Header */}
+            <div className="flex items-center justify-between border-b pb-3 mb-2 flex-shrink-0 print:hidden" style={{ borderColor: "hsl(var(--border))" }}>
+              <div className="flex items-center gap-1.5 overflow-hidden">
+                <span className="text-lg sm:text-xl">📐</span>
+                <h2 className="text-xs sm:text-lg font-bold text-foreground truncate" style={{ fontFamily: "Cormorant Garamond, serif" }}>
+                  Tailor Job Sheet
                 </h2>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
+                  type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2 hover:opacity-90 transition-opacity"
+                  className="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white flex items-center gap-1 hover:opacity-90 transition-opacity shadow-sm"
                   style={{ background: "hsl(var(--primary))" }}
                 >
-                  <span>🖨️</span> Print Sheet
+                  <span>🖨️</span> Print
                 </button>
                 <button
+                  type="button"
                   onClick={() => setIsPrintModalOpen(false)}
-                  className="px-3 py-2 rounded-lg border text-sm hover:bg-muted font-bold text-muted-foreground"
+                  className="px-2.5 py-1.5 rounded-lg border text-xs sm:text-sm hover:bg-muted font-bold text-muted-foreground transition-colors"
+                  style={{ borderColor: "hsl(var(--border))" }}
                 >
                   ✕
                 </button>
               </div>
             </div>
 
-            <PrintableJobSheet order={selectedOrderForPrint} />
+            {/* Scrollable Printable Content */}
+            <div className="flex-1 overflow-y-auto pr-0.5 print:overflow-visible">
+              <PrintableJobSheet order={selectedOrderForPrint} />
+            </div>
           </div>
         </div>
       )}
