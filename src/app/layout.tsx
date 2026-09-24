@@ -1,3 +1,4 @@
+import GlobalLoader from "@/components/layout/GlobalLoader";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -23,6 +24,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full bg-background">
+        <GlobalLoader />
         {children}
         <Toaster
           richColors
