@@ -65,58 +65,6 @@ export default function CreateOrderClient({
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const fabricAttachmentInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUploadImagesCategory = async (files: FileList, defaultCategory: 'reference' | 'fabric') => {
-    const isFabric = defaultCategory === 'fabric';
-    if (isFabric) setUploadingFabricAttachment(true);
-    else setUploadingAttachment(true);
-
-    try {
-      const newItems: OrderAttachmentFormData[] = [];
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        let imageUrl = "";
-
-        try {
-          const formData = new FormData();
-          formData.append("file", file);
-
-          const res = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          const data = await res.json();
-
-          if (res.ok && data.url) {
-            imageUrl = data.url;
-          } else {
-            imageUrl = await readFileAsDataUrl(file);
-          }
-        } catch {
-          imageUrl = await readFileAsDataUrl(file);
-        }
-
-        const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-
-        const fileTypeWithCat = file.type ? `${file.type};category=${defaultCategory}` : `image/jpeg;category=${defaultCategory}`;
-        newItems.push({
-          file_url: imageUrl,
-          file_name: cleanName || (defaultCategory === 'fabric' ? `Fabric Sample ${attachments.length + i + 1}` : `Design Ref ${attachments.length + i + 1}`),
-          file_type: fileTypeWithCat,
-          category: defaultCategory,
-        });
-      }
-
-      setAttachments((prev) => [...prev, ...newItems]);
-      toast.success(`${newItems.length} image(s) added!`);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Image upload failed");
-    } finally {
-      if (isFabric) setUploadingFabricAttachment(false);
-      else setUploadingAttachment(false);
-    }
-  };
   const fabricInputRef = useRef<HTMLInputElement>(null);
 
   const readFileAsDataUrl = (file: File): Promise<string> => {
@@ -128,42 +76,95 @@ export default function CreateOrderClient({
     });
   };
 
-  const handleMultipleImageUpload = async (
-    files: FileList,
-    defaultCategory: "reference" | "fabric" | "color" | "material" = "reference"
+  
+
+    const uploadSingleFileToApi = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const data = await res.json();
+    if (!res.ok || !data.url) throw new Error(data.error || "Upload failed");
+    return data.url;
+  };
+
+  const processFileWithCropper = (
+    filesArray: File[],
+    category: 'reference' | 'fabric',
+    itemIndex?: number
   ) => {
-    if (files.length === 0) return;
-    const file = files[0];
+    if (filesArray.length === 0) return;
+
+    const file = filesArray[0];
+    const remainingFiles = filesArray.slice(1);
+
     const reader = new FileReader();
     reader.onload = () => {
+      const isFabric = category === 'fabric';
+      const title = itemIndex !== undefined
+        ? "Crop & Optimize Item Fabric Image"
+        : isFabric
+        ? "Crop & Optimize Fabric / Material Sample"
+        : "Crop & Optimize Design Reference Image";
+
       setCropperData({
         src: reader.result as string,
-        title: "Crop & Optimize Reference Attachment",
+        title,
         onComplete: async (croppedFile: File) => {
           setCropperData(null);
-          setUploadingAttachment(true);
+          if (itemIndex !== undefined) setUploadingIdx(itemIndex);
+          else if (isFabric) setUploadingFabricAttachment(true);
+          else setUploadingAttachment(true);
+
           try {
             const url = await uploadSingleFileToApi(croppedFile);
-            const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-            setAttachments((prev) => [
-              ...prev,
-              {
-                file_url: url,
-                file_name: cleanName || (defaultCategory === 'fabric' ? `Fabric Sample ${prev.length + 1}` : `Design Ref ${prev.length + 1}`),
-                file_type: `image/jpeg;category=${defaultCategory}`,
-                category: defaultCategory,
-              },
-            ]);
-            toast.success("Attachment cropped & uploaded!");
+
+            if (itemIndex !== undefined) {
+              updateItem(itemIndex, "fabric_image_url", url);
+              toast.success("Item fabric image uploaded to S3!");
+            } else {
+              const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+              const fileTypeWithCat = `image/jpeg;category=${category}`;
+
+              setAttachments((prev) => [
+                ...prev,
+                {
+                  file_url: url,
+                  file_name: cleanName || (isFabric ? `Fabric Sample ${prev.length + 1}` : `Design Ref ${prev.length + 1}`),
+                  file_type: fileTypeWithCat,
+                  category,
+                },
+              ]);
+              toast.success(`${isFabric ? "Fabric sample" : "Design reference"} uploaded to S3!`);
+            }
           } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : "Upload failed");
+            toast.error(err instanceof Error ? err.message : "Failed to upload image to S3");
           } finally {
+            setUploadingIdx(null);
+            setUploadingFabricAttachment(false);
             setUploadingAttachment(false);
+
+            if (remainingFiles.length > 0) {
+              setTimeout(() => {
+                processFileWithCropper(remainingFiles, category, itemIndex);
+              }, 250);
+            }
           }
         },
       });
     };
     reader.readAsDataURL(file);
+  };
+
+  const removeAttachment = async (idx: number) => {
+    const att = attachments[idx];
+    if (att?.file_url && att.file_url.includes("amazonaws.com")) {
+      try {
+        await fetch(`/api/upload?url=${encodeURIComponent(att.file_url)}`, { method: "DELETE" });
+      } catch (e) {
+        console.error("Failed to delete S3 object:", e);
+      }
+    }
+    setAttachments((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const [form, setForm] = useState<OrderData>({
@@ -282,37 +283,8 @@ export default function CreateOrderClient({
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
     );
 
-  const uploadSingleFileToApi = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-    if (!res.ok || !data.url) throw new Error(data.error || "Upload failed");
-    return data.url;
-  };
-
   const handleImageUpload = async (idx: number, rawFile: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      setCropperData({
-        src: reader.result as string,
-        title: "Crop & Optimize Fabric Image",
-        onComplete: async (croppedFile: File) => {
-          setCropperData(null);
-          setUploadingIdx(idx);
-          try {
-            const url = await uploadSingleFileToApi(croppedFile);
-            updateItem(idx, "fabric_image_url", url);
-            toast.success("Fabric image cropped & uploaded!");
-          } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : "Upload failed");
-          } finally {
-            setUploadingIdx(null);
-          }
-        },
-      });
-    };
-    reader.readAsDataURL(rawFile);
+    processFileWithCropper([rawFile], "fabric", idx);
   };
 
   const addNewParty = async () => {
@@ -1004,7 +976,8 @@ export default function CreateOrderClient({
               className="hidden"
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
-                  handleUploadImagesCategory(e.target.files, "fabric");
+                  processFileWithCropper(Array.from(e.target.files), "fabric");
+                  e.target.value = "";
                 }
               }}
             />
@@ -1038,7 +1011,7 @@ export default function CreateOrderClient({
                     <img src={att.file_url} alt={att.file_name || "Attachment"} className="w-full h-full object-cover" />
                     <button
                       type="button"
-                      onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                      onClick={() => removeAttachment(idx)}
                       className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center text-sm font-bold shadow-md hover:bg-red-700 transition-colors"
                       title="Remove image"
                     >
@@ -1147,7 +1120,8 @@ export default function CreateOrderClient({
               className="hidden"
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
-                  handleUploadImagesCategory(e.target.files, "reference");
+                  processFileWithCropper(Array.from(e.target.files), "reference");
+                  e.target.value = "";
                 }
               }}
             />
@@ -1181,7 +1155,7 @@ export default function CreateOrderClient({
                     <img src={att.file_url} alt={att.file_name || "Attachment"} className="w-full h-full object-cover" />
                     <button
                       type="button"
-                      onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                      onClick={() => removeAttachment(idx)}
                       className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center text-sm font-bold shadow-md hover:bg-red-700 transition-colors"
                       title="Remove image"
                     >

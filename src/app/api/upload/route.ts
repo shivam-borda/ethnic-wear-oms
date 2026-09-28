@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const region = process.env.AWS_REGION || "ap-south-1";
+    const region = process.env.AWS_REGION || "eu-north-1";
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
@@ -59,6 +59,55 @@ export async function POST(request: Request) {
     console.error("S3 Upload Error:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to upload file to Amazon S3" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const url = searchParams.get("url");
+
+    if (!url || (!url.includes("amazonaws.com") && !url.includes("s3."))) {
+      return NextResponse.json({ success: true, message: "Not an S3 URL" });
+    }
+
+    let key = "";
+    if (url.includes(".amazonaws.com/")) {
+      key = url.split(".amazonaws.com/")[1];
+    }
+
+    if (!key) {
+      return NextResponse.json({ success: true, message: "Key could not be extracted" });
+    }
+
+    const region = process.env.AWS_REGION || "eu-north-1";
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    if (!accessKeyId || !secretAccessKey || !bucketName) {
+      return NextResponse.json({ error: "AWS S3 credentials missing" }, { status: 500 });
+    }
+
+    const s3Client = new S3Client({
+      region,
+      credentials: { accessKeyId, secretAccessKey },
+    });
+
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+      })
+    );
+
+    return NextResponse.json({ success: true, key });
+  } catch (err: unknown) {
+    console.error("S3 Delete Error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to delete file from S3" },
       { status: 500 }
     );
   }
