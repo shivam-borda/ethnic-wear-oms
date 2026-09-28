@@ -389,6 +389,7 @@ export default function CreateOrderClient({
         }
 
         toast.success("Order updated successfully!");
+        router.refresh();
         router.push(`/orders/${editOrderId}`);
       } else {
         // Insert new order
@@ -444,6 +445,7 @@ export default function CreateOrderClient({
         }
 
         toast.success(`Order ${orderData.order_number} created!`);
+        router.refresh();
         router.push(`/orders/${orderData.id}`);
       }
     } catch (err: unknown) {

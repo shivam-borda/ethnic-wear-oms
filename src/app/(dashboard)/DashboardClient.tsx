@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import type { DashboardStats, MonthlyData, StatusData, Order } from "@/types";
 import { formatDate, getDeliveryLabel } from "@/lib/utils";
 
@@ -157,6 +158,10 @@ export default function DashboardClient({
   recentOrders,
 }: Props) {
   const router = useRouter();
+
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
 
   return (
     <div className="space-y-6">

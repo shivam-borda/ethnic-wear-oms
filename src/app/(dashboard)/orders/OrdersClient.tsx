@@ -3,7 +3,7 @@
 import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS } from "@/types";
 import SearchableSelect from "@/components/ui/SearchableSelect";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Order } from "@/types";
@@ -39,6 +39,33 @@ export default function OrdersClient({ initialOrders }: Props) {
   const urlFilter = searchParams.get("filter") || "";
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+
+  // Keep orders state synced whenever initialOrders prop updates from server
+  useEffect(() => {
+    setOrders(initialOrders);
+  }, [initialOrders]);
+
+  // Refresh server component data on mount
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
+
+  // Restore saved viewMode preference from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = localStorage.getItem("oms_orders_view_mode");
+      if (savedMode === "cards" || savedMode === "table") {
+        setViewMode(savedMode);
+      }
+    }
+  }, []);
+
+  const handleViewModeChange = (mode: "cards" | "table") => {
+    setViewMode(mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("oms_orders_view_mode", mode);
+    }
+  };
   const [selectedOrderForPrint, setSelectedOrderForPrint] = useState<Order | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -189,7 +216,7 @@ export default function OrdersClient({ initialOrders }: Props) {
             <button
               type="button"
               id="orders-view-cards-btn"
-              onClick={() => setViewMode("cards")}
+              onClick={() => handleViewModeChange("cards")}
               className={`px-3 py-2 flex items-center gap-1.5 transition-colors ${
                 viewMode === "cards" ? "bg-primary text-white font-bold" : "hover:bg-muted text-muted-foreground"
               }`}
@@ -199,7 +226,7 @@ export default function OrdersClient({ initialOrders }: Props) {
             <button
               type="button"
               id="orders-view-table-btn"
-              onClick={() => setViewMode("table")}
+              onClick={() => handleViewModeChange("table")}
               className={`px-3 py-2 flex items-center gap-1.5 transition-colors ${
                 viewMode === "table" ? "bg-primary text-white font-bold" : "hover:bg-muted text-muted-foreground"
               }`}

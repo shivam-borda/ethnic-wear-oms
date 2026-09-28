@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { createClient } from "@/lib/supabase/server";
 import DashboardClient from "./DashboardClient";
 import type { Order, DashboardStats, MonthlyData } from "@/types";
