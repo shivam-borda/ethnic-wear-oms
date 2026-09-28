@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import type { Order, OrderItem, Stage, StageStatus } from "@/types";
+import { getAttachmentCategory } from "@/types";
 import {
   ITEM_TYPE_LABELS,
   parseMeasurements,
@@ -72,6 +73,15 @@ function ProductionProgress({ item }: { item: OrderItem }) {
 export default function OrderDetailClient({ order: initialOrder }: Props) {
   const router = useRouter();
   const [order, setOrder] = useState<Order>(initialOrder);
+
+  const fabricAttachments = (order.attachments || []).filter((a) => {
+    const c = getAttachmentCategory(a);
+    return c === "fabric" || c === "color" || c === "material";
+  });
+  const referenceAttachments = (order.attachments || []).filter((a) => {
+    const c = getAttachmentCategory(a);
+    return c === "reference";
+  });
   const [updatingStage, setUpdatingStage] = useState<string | null>(null);
   const [deletingOrder, setDeletingOrder] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -328,20 +338,53 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
           );
         })()}
 
-        {/* Reference Images & Attachments Gallery */}
-        {order.attachments && order.attachments.length > 0 && (
+        {/* Fabric, Color & Material Samples Gallery */}
+        {fabricAttachments.length > 0 && (
           <div className="rounded-xl border bg-card p-4 sm:p-5 shadow-sm space-y-3" style={{ borderColor: "hsl(var(--border))" }}>
             <h3 className="font-semibold text-base flex items-center justify-between" style={{ fontFamily: "Cormorant Garamond, serif" }}>
-              <span>📸 Reference Images & Attachments ({order.attachments.length})</span>
+              <span>🧵 Fabric, Color & Material Samples ({fabricAttachments.length})</span>
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {order.attachments.map((att, idx) => (
+              {fabricAttachments.map((att, idx) => (
                 <div
                   key={att.id || idx}
                   className="rounded-lg border bg-muted/30 overflow-hidden cursor-pointer group hover:shadow-md transition-all"
                   style={{ borderColor: "hsl(var(--border))" }}
                   onClick={() => {
-                    setLightboxImages((order.attachments || []).map((a) => ({ url: a.file_url, title: a.file_name || "Reference Image" })));
+                    setLightboxImages(fabricAttachments.map((a) => ({ url: a.file_url, title: a.file_name || "Fabric Sample" })));
+                    setLightboxIndex(idx);
+                  }}
+                >
+                  <div className="h-28 bg-gray-100 dark:bg-zinc-900 flex items-center justify-center relative overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={att.file_url} alt={att.file_name || "Fabric"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
+                      🔍 Full Screen
+                    </div>
+                  </div>
+                  <div className="p-2 bg-card border-t text-center" style={{ borderColor: "hsl(var(--border))" }}>
+                    <p className="text-xs font-semibold truncate text-foreground">{att.file_name || "Fabric Sample"}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Design & Style Reference Images Gallery */}
+        {referenceAttachments.length > 0 && (
+          <div className="rounded-xl border bg-card p-4 sm:p-5 shadow-sm space-y-3" style={{ borderColor: "hsl(var(--border))" }}>
+            <h3 className="font-semibold text-base flex items-center justify-between" style={{ fontFamily: "Cormorant Garamond, serif" }}>
+              <span>📸 Design & Style Reference Images ({referenceAttachments.length})</span>
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {referenceAttachments.map((att, idx) => (
+                <div
+                  key={att.id || idx}
+                  className="rounded-lg border bg-muted/30 overflow-hidden cursor-pointer group hover:shadow-md transition-all"
+                  style={{ borderColor: "hsl(var(--border))" }}
+                  onClick={() => {
+                    setLightboxImages(referenceAttachments.map((a) => ({ url: a.file_url, title: a.file_name || "Design Reference" })));
                     setLightboxIndex(idx);
                   }}
                 >
@@ -353,7 +396,7 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
                     </div>
                   </div>
                   <div className="p-2 bg-card border-t text-center" style={{ borderColor: "hsl(var(--border))" }}>
-                    <p className="text-xs font-semibold truncate text-foreground">{att.file_name || "Reference Image"}</p>
+                    <p className="text-xs font-semibold truncate text-foreground">{att.file_name || "Design Reference"}</p>
                   </div>
                 </div>
               ))}

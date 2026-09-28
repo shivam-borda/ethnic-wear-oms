@@ -112,6 +112,7 @@ export interface Attachment {
   file_url: string;
   file_name: string | null;
   file_type: string | null;
+  category?: "reference" | "fabric" | "color" | "material" | null;
   uploaded_by: string | null;
   created_at: string;
 }
@@ -242,4 +243,18 @@ export interface OrderAttachmentFormData {
   file_name: string;
   file_type?: string;
   category?: 'reference' | 'fabric' | 'color' | 'material';
+}
+
+
+export function getAttachmentCategory(att: { category?: string | null; file_type?: string | null }): 'fabric' | 'color' | 'material' | 'reference' {
+  if (att.category && ['fabric', 'color', 'material', 'reference'].includes(att.category)) {
+    return att.category as 'fabric' | 'color' | 'material' | 'reference';
+  }
+  if (att.file_type) {
+    if (att.file_type.includes('category=fabric')) return 'fabric';
+    if (att.file_type.includes('category=color')) return 'color';
+    if (att.file_type.includes('category=material')) return 'material';
+    if (att.file_type.includes('category=reference')) return 'reference';
+  }
+  return 'reference';
 }

@@ -5,9 +5,18 @@ import ImageLightbox from "@/components/ui/ImageLightbox";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
 import { format } from "date-fns";
 import type { Order } from "@/types";
-import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS } from "@/types";
+import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS, getAttachmentCategory } from "@/types";
 
 export function PrintableJobSheet({ order }: { order: Order }) {
+  const fabricAttachments = (order.attachments || []).filter((a) => {
+    const c = getAttachmentCategory(a);
+    return c === "fabric" || c === "color" || c === "material";
+  });
+  const referenceAttachments = (order.attachments || []).filter((a) => {
+    const c = getAttachmentCategory(a);
+    return c === "reference";
+  });
+  const allAttachments = [...fabricAttachments, ...referenceAttachments];
   const m = parseMeasurements(order.stitching_measurement_number);
   const slipNo = getCleanSlipNumber(order);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -167,30 +176,64 @@ export function PrintableJobSheet({ order }: { order: Order }) {
         </div>
       )}
 
-      {/* 6. Reference Images Grid */}
-      {order.attachments && order.attachments.length > 0 && (
+      {/* 6A. Fabric & Material Samples Grid */}
+      {fabricAttachments.length > 0 && (
         <div className="border border-black rounded-sm p-2 space-y-1">
           <div className="font-bold text-[11px] uppercase border-b border-gray-300 pb-1">
-            📸 Reference Images ({order.attachments.length})
+            🧶 Fabric & Material Samples ({fabricAttachments.length})
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-            {order.attachments.map((att, idx) => (
-              <div
-                key={att.id || idx}
-                onClick={() => setLightboxIndex(idx)}
-                className="border border-gray-400 p-1 text-center bg-white cursor-pointer hover:border-black hover:shadow-sm transition-all"
-                title="Click to view full screen"
-              >
-                <div className="w-full h-16 sm:h-20 bg-gray-100 flex items-center justify-center overflow-hidden relative group">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={att.file_url} alt={att.file_name || "Ref"} className="w-full h-full object-contain" />
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
-                    🔍 Full Screen
+            {fabricAttachments.map((att, idx) => {
+              const globalIdx = allAttachments.findIndex((a) => a === att);
+              return (
+                <div
+                  key={att.id || idx}
+                  onClick={() => setLightboxIndex(globalIdx !== -1 ? globalIdx : idx)}
+                  className="border border-gray-400 p-1 text-center bg-white cursor-pointer hover:border-black hover:shadow-sm transition-all"
+                  title="Click to view full screen"
+                >
+                  <div className="w-full h-16 sm:h-20 bg-gray-100 flex items-center justify-center overflow-hidden relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={att.file_url} alt={att.file_name || "Fabric Sample"} className="w-full h-full object-contain" />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                      🔍 Full Screen
+                    </div>
                   </div>
+                  <p className="text-[9px] font-semibold truncate mt-0.5">{att.file_name || "Fabric Sample"}</p>
                 </div>
-                <p className="text-[9px] font-semibold truncate mt-0.5">{att.file_name || "Reference"}</p>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 6B. Design & Style Reference Images Grid */}
+      {referenceAttachments.length > 0 && (
+        <div className="border border-black rounded-sm p-2 space-y-1">
+          <div className="font-bold text-[11px] uppercase border-b border-gray-300 pb-1">
+            📸 Design & Style Reference Images ({referenceAttachments.length})
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+            {referenceAttachments.map((att, idx) => {
+              const globalIdx = allAttachments.findIndex((a) => a === att);
+              return (
+                <div
+                  key={att.id || idx}
+                  onClick={() => setLightboxIndex(globalIdx !== -1 ? globalIdx : idx)}
+                  className="border border-gray-400 p-1 text-center bg-white cursor-pointer hover:border-black hover:shadow-sm transition-all"
+                  title="Click to view full screen"
+                >
+                  <div className="w-full h-16 sm:h-20 bg-gray-100 flex items-center justify-center overflow-hidden relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={att.file_url} alt={att.file_name || "Ref"} className="w-full h-full object-contain" />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                      🔍 Full Screen
+                    </div>
+                  </div>
+                  <p className="text-[9px] font-semibold truncate mt-0.5">{att.file_name || "Design Ref"}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -198,9 +241,9 @@ export function PrintableJobSheet({ order }: { order: Order }) {
       {/* Full Screen Image Lightbox */}
       {lightboxIndex !== null && (
         <ImageLightbox
-          images={(order.attachments || []).map((att) => ({
+          images={allAttachments.map((att) => ({
             url: att.file_url,
-            title: att.file_name || "Reference Image",
+            title: att.file_name || "Attachment Image",
           }))}
           currentIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}

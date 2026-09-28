@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import CreateOrderClient from "../../new/CreateOrderClient";
 import type { Party, FabricParty, Order, OrderItemFormData } from "@/types";
+import { getAttachmentCategory } from "@/types";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -34,6 +35,7 @@ export default async function EditOrderPage({ params }: Props) {
     file_url: att.file_url,
     file_name: att.file_name || "",
     file_type: att.file_type || "",
+    category: getAttachmentCategory(att),
   }));
 
   const items: OrderItemFormData[] = (typedOrder.order_items || [])

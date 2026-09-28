@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import type { Party, FabricParty, OrderItemFormData, ItemType, GarmentMeasurements, OrderAttachmentFormData } from "@/types";
+import { getAttachmentCategory } from "@/types";
 import { ITEM_TYPE_LABELS, parseMeasurements } from "@/types";
 
 interface OrderData {
@@ -98,10 +99,11 @@ export default function CreateOrderClient({
 
         const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
 
+        const fileTypeWithCat = file.type ? `${file.type};category=${defaultCategory}` : `image/jpeg;category=${defaultCategory}`;
         newItems.push({
           file_url: imageUrl,
-          file_name: cleanName || `Image ${attachments.length + i + 1}`,
-          file_type: file.type,
+          file_name: cleanName || (defaultCategory === 'fabric' ? `Fabric Sample ${attachments.length + i + 1}` : `Design Ref ${attachments.length + i + 1}`),
+          file_type: fileTypeWithCat,
           category: defaultCategory,
         });
       }
@@ -147,8 +149,8 @@ export default function CreateOrderClient({
               ...prev,
               {
                 file_url: url,
-                file_name: cleanName || `Attachment ${prev.length + 1}`,
-                file_type: "image/jpeg",
+                file_name: cleanName || (defaultCategory === 'fabric' ? `Fabric Sample ${prev.length + 1}` : `Design Ref ${prev.length + 1}`),
+                file_type: `image/jpeg;category=${defaultCategory}`,
                 category: defaultCategory,
               },
             ]);
@@ -397,13 +399,19 @@ export default function CreateOrderClient({
         // Save attachments for existing order
         await supabase.from("attachments").delete().eq("order_id", editOrderId);
         if (attachments.length > 0) {
-          const attachToInsert = attachments.map((att) => ({
-            order_id: editOrderId,
-            file_url: att.file_url,
-            file_name: att.file_name || "Reference Image",
-            file_type: att.file_type || "image",
-            uploaded_by: user?.id || null,
-          }));
+          const attachToInsert = attachments.map((att) => {
+            const cat = att.category || getAttachmentCategory(att);
+            const fileType = att.file_type?.includes("category=")
+              ? att.file_type
+              : `${att.file_type || "image/jpeg"};category=${cat}`;
+            return {
+              order_id: editOrderId,
+              file_url: att.file_url,
+              file_name: att.file_name || (cat === "reference" ? "Design Reference" : "Fabric Sample"),
+              file_type: fileType,
+              uploaded_by: user?.id || null,
+            };
+          });
           const { error: attErr } = await supabase.from("attachments").insert(attachToInsert);
           if (attErr) console.error("Failed to save attachments:", attErr);
         }
@@ -446,13 +454,19 @@ export default function CreateOrderClient({
 
         // Save attachments for new order
         if (attachments.length > 0) {
-          const attachToInsert = attachments.map((att) => ({
-            order_id: orderData.id,
-            file_url: att.file_url,
-            file_name: att.file_name || "Reference Image",
-            file_type: att.file_type || "image",
-            uploaded_by: user?.id || null,
-          }));
+          const attachToInsert = attachments.map((att) => {
+            const cat = att.category || getAttachmentCategory(att);
+            const fileType = att.file_type?.includes("category=")
+              ? att.file_type
+              : `${att.file_type || "image/jpeg"};category=${cat}`;
+            return {
+              order_id: orderData.id,
+              file_url: att.file_url,
+              file_name: att.file_name || (cat === "reference" ? "Design Reference" : "Fabric Sample"),
+              file_type: fileType,
+              uploaded_by: user?.id || null,
+            };
+          });
           const { error: attErr } = await supabase.from("attachments").insert(attachToInsert);
           if (attErr) console.error("Failed to save attachments:", attErr);
         }
@@ -998,7 +1012,7 @@ export default function CreateOrderClient({
         </div>
 
         {/* Fabric & Material Uploaded Images List */}
-        {attachments.filter((a) => a.category === "fabric" || a.category === "color" || a.category === "material").length === 0 ? (
+        {attachments.filter((a) => { const c = getAttachmentCategory(a); return c === "fabric" || c === "color" || c === "material"; }).length === 0 ? (
           <div
             onClick={() => fabricAttachmentInputRef.current?.click()}
             className="p-5 rounded-xl border border-dashed text-center text-xs text-muted-foreground cursor-pointer hover:bg-muted/30 transition-colors"
@@ -1011,7 +1025,8 @@ export default function CreateOrderClient({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-1">
             {attachments.map((att, idx) => {
-              if (att.category !== "fabric" && att.category !== "color" && att.category !== "material") return null;
+              const currentCat = getAttachmentCategory(att);
+              if (currentCat !== "fabric" && currentCat !== "color" && currentCat !== "material") return null;
               return (
                 <div
                   key={idx}
@@ -1037,7 +1052,11 @@ export default function CreateOrderClient({
                       value={att.category || "fabric"}
                       onChange={(e) => {
                         const cat = e.target.value as any;
-                        setAttachments((prev) => prev.map((item, i) => (i === idx ? { ...item, category: cat } : item)));
+                        setAttachments((prev) => prev.map((item, i) => (i === idx ? {
+                          ...item,
+                          category: cat,
+                          file_type: `${(item.file_type || "image/jpeg").split(";")[0]};category=${cat}`
+                        } : item)));
                       }}
                       className="w-full px-2 py-1.5 rounded-lg border bg-card text-xs outline-none focus:ring-1"
                       style={{ borderColor: "hsl(var(--border))" }}
@@ -1136,7 +1155,7 @@ export default function CreateOrderClient({
         </div>
 
         {/* Uploaded Design Reference Images List */}
-        {attachments.filter((a) => a.category === "reference" || !a.category).length === 0 ? (
+        {attachments.filter((a) => getAttachmentCategory(a) === "reference").length === 0 ? (
           <div
             onClick={() => attachmentInputRef.current?.click()}
             className="p-5 rounded-xl border border-dashed text-center text-xs text-muted-foreground cursor-pointer hover:bg-muted/30 transition-colors"
@@ -1149,7 +1168,8 @@ export default function CreateOrderClient({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-1">
             {attachments.map((att, idx) => {
-              if (att.category === "fabric" || att.category === "color" || att.category === "material") return null;
+              const currentCat = getAttachmentCategory(att);
+              if (currentCat !== "reference") return null;
               return (
                 <div
                   key={idx}
