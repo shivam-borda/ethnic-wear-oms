@@ -179,17 +179,17 @@ export default function MeasurementsClient({ initialOrders }: Props) {
                   <div className="mt-4 pt-3 border-t grid grid-cols-2 gap-2 text-xs" style={{ borderColor: "hsl(var(--border))" }}>
                     {/* Upper */}
                     <div className="bg-muted/50 p-2 rounded-lg space-y-0.5">
-                      <p className="font-semibold text-primary">👔 Upper (ઉપર)</p>
-                      <p className="text-muted-foreground">Len (લંબાઈ): <span className="font-medium text-foreground">{m.kurta_length || "-"}</span></p>
-                      <p className="text-muted-foreground">Chest (છાતી): <span className="font-medium text-foreground">{m.chest || "-"}</span></p>
-                      <p className="text-muted-foreground">Shoulder (શોલ્ડર): <span className="font-medium text-foreground">{m.shoulder || "-"}</span></p>
+                      <p className="font-semibold text-primary">👔 Upper (અપર)</p>
+                      <p className="text-muted-foreground">Lambai (લંબાઈ): <span className="font-medium text-foreground">{m.lambai || m.kurta_length || "-"}</span></p>
+                      <p className="text-muted-foreground">Chati (છાતી): <span className="font-medium text-foreground">{m.chati || m.chest || "-"}</span></p>
+                      <p className="text-muted-foreground">Solder (સોલ્ડર): <span className="font-medium text-foreground">{m.solder || m.shoulder || "-"}</span></p>
                     </div>
-                    {/* Lower */}
+                    {/* Bottom */}
                     <div className="bg-muted/50 p-2 rounded-lg space-y-0.5">
-                      <p className="font-semibold text-primary">👖 Lower (નીચે)</p>
-                      <p className="text-muted-foreground">Len (લંબાઈ): <span className="font-medium text-foreground">{m.pant_length || "-"}</span></p>
-                      <p className="text-muted-foreground">Waist (કમર): <span className="font-medium text-foreground">{m.pant_waist || "-"}</span></p>
-                      <p className="text-muted-foreground">Mori (મોરી): <span className="font-medium text-foreground">{m.bottom_mori || "-"}</span></p>
+                      <p className="font-semibold text-primary">👖 Bottom (બોટમ)</p>
+                      <p className="text-muted-foreground">Lambai (લંબાઈ): <span className="font-medium text-foreground">{m.lambai_bottom || m.pant_length || "-"}</span></p>
+                      <p className="text-muted-foreground">Kamber (કમર): <span className="font-medium text-foreground">{m.kamber || m.pant_waist || "-"}</span></p>
+                      <p className="text-muted-foreground">Moli (મોરી): <span className="font-medium text-foreground">{m.moli || m.bottom_mori || "-"}</span></p>
                     </div>
                   </div>
                 </div>

@@ -182,23 +182,20 @@ export default function CreateOrderClient({
   const initialMeasurements = parseMeasurements(defaultValues?.stitching_measurement_number);
   const [measurements, setMeasurements] = useState<GarmentMeasurements>({
     slip_number: initialMeasurements.slip_number || defaultValues?.stitching_measurement_number || "",
-    kurta_length: initialMeasurements.kurta_length || "",
-    chest: initialMeasurements.chest || "",
-    waist: initialMeasurements.waist || "",
-    hips: initialMeasurements.hips || "",
-    shoulder: initialMeasurements.shoulder || "",
-    sleeve_length: initialMeasurements.sleeve_length || "",
-    sleeve_opening: initialMeasurements.sleeve_opening || "",
-    collar_neck: initialMeasurements.collar_neck || "",
-    biceps: initialMeasurements.biceps || "",
-    front_cross: initialMeasurements.front_cross || "",
-    pant_length: initialMeasurements.pant_length || "",
-    pant_waist: initialMeasurements.pant_waist || "",
-    pant_hips: initialMeasurements.pant_hips || "",
-    thigh: initialMeasurements.thigh || "",
-    knee: initialMeasurements.knee || "",
-    galo: initialMeasurements.galo || "",
-    bottom_mori: initialMeasurements.bottom_mori || "",
+    // Upper Body
+    lambai: initialMeasurements.lambai || "",
+    bai: initialMeasurements.bai || "",
+    solder: initialMeasurements.solder || "",
+    chati: initialMeasurements.chati || "",
+    cap: initialMeasurements.cap || "",
+    coller: initialMeasurements.coller || "",
+    // Bottom
+    lambai_bottom: initialMeasurements.lambai_bottom || "",
+    kamber: initialMeasurements.kamber || "",
+    sheet: initialMeasurements.sheet || "",
+    jang: initialMeasurements.jang || "",
+    moli: initialMeasurements.moli || "",
+    kistak: initialMeasurements.kistak || "",
     notes: initialMeasurements.notes || "",
   });
 
@@ -599,107 +596,74 @@ export default function CreateOrderClient({
         {isMeasurementExpanded && (
           <div className="p-5 border-t space-y-6 bg-card/50" style={{ borderColor: "hsl(var(--border))" }}>
 
-            {/* Upper Body (Kurta / Koti / Blazer) */}
+            {/* Upper Body (Kurta / Koti / Blazer / Shirt) */}
             <div>
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <span>👔</span> Upper Body Garment (Kurta / Koti / Blazer)
+                <span>👔</span> Upper Body Garment (અપર બોડી - Kurta / Koti / Blazer)
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Length (લંબાઈ)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">1) Lambai (લંબાઈ)</label>
                   <input
                     type="text"
-                    value={measurements.kurta_length || ""}
-                    onChange={(e) => updateMeasurement("kurta_length", e.target.value)}
+                    value={measurements.lambai || ""}
+                    onChange={(e) => updateMeasurement("lambai", e.target.value)}
                     placeholder="e.g. 40"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Chest (છાતી)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">2) Bai (બાઈ)</label>
                   <input
                     type="text"
-                    value={measurements.chest || ""}
-                    onChange={(e) => updateMeasurement("chest", e.target.value)}
-                    placeholder="e.g. 38"
-                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
-                    style={{ borderColor: "hsl(var(--border))" }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Waist (કમર)</label>
-                  <input
-                    type="text"
-                    value={measurements.waist || ""}
-                    onChange={(e) => updateMeasurement("waist", e.target.value)}
-                    placeholder="e.g. 34"
-                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
-                    style={{ borderColor: "hsl(var(--border))" }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Seat / Hips (સીટ)</label>
-                  <input
-                    type="text"
-                    value={measurements.hips || ""}
-                    onChange={(e) => updateMeasurement("hips", e.target.value)}
-                    placeholder="e.g. 40"
-                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
-                    style={{ borderColor: "hsl(var(--border))" }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Shoulder (શોલ્ડર)</label>
-                  <input
-                    type="text"
-                    value={measurements.shoulder || ""}
-                    onChange={(e) => updateMeasurement("shoulder", e.target.value)}
-                    placeholder="e.g. 18"
-                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
-                    style={{ borderColor: "hsl(var(--border))" }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Sleeve (બાઈ)</label>
-                  <input
-                    type="text"
-                    value={measurements.sleeve_length || ""}
-                    onChange={(e) => updateMeasurement("sleeve_length", e.target.value)}
+                    value={measurements.bai || ""}
+                    onChange={(e) => updateMeasurement("bai", e.target.value)}
                     placeholder="e.g. 24"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Sleeve Opening (બાઈ મોરી)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">3) Solder (સોલ્ડર)</label>
                   <input
                     type="text"
-                    value={measurements.sleeve_opening || ""}
-                    onChange={(e) => updateMeasurement("sleeve_opening", e.target.value)}
-                    placeholder="e.g. 11"
+                    value={measurements.solder || ""}
+                    onChange={(e) => updateMeasurement("solder", e.target.value)}
+                    placeholder="e.g. 18"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Collar / Neck (કોલર)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">4) Chati (છાતી)</label>
                   <input
                     type="text"
-                    value={measurements.collar_neck || ""}
-                    onChange={(e) => updateMeasurement("collar_neck", e.target.value)}
-                    placeholder="e.g. 15.5"
+                    value={measurements.chati || ""}
+                    onChange={(e) => updateMeasurement("chati", e.target.value)}
+                    placeholder="e.g. 38"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Biceps / Loose (મુંઢો)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">5) Cap (કેપ)</label>
                   <input
                     type="text"
-                    value={measurements.biceps || ""}
-                    onChange={(e) => updateMeasurement("biceps", e.target.value)}
+                    value={measurements.cap || ""}
+                    onChange={(e) => updateMeasurement("cap", e.target.value)}
                     placeholder="e.g. 15"
+                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">6) Coller (કોલર)</label>
+                  <input
+                    type="text"
+                    value={measurements.coller || ""}
+                    onChange={(e) => updateMeasurement("coller", e.target.value)}
+                    placeholder="e.g. 15.5"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
@@ -707,86 +671,74 @@ export default function CreateOrderClient({
               </div>
             </div>
 
-            {/* Lower Body (Pant / Pyjama) */}
+            {/* Lower Body (Pant / Pyjama / Bottom) */}
             <div>
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <span>👖</span> Lower Body Garment (Pant / Pyjama)
+                <span>👖</span> Bottom Garment (બોટમ - Pant / Pyjama)
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Pant Length (લંબાઈ)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">1) Lambai (લંબાઈ)</label>
                   <input
                     type="text"
-                    value={measurements.pant_length || ""}
-                    onChange={(e) => updateMeasurement("pant_length", e.target.value)}
+                    value={measurements.lambai_bottom || ""}
+                    onChange={(e) => updateMeasurement("lambai_bottom", e.target.value)}
                     placeholder="e.g. 39"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Pant Waist (કમર)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">2) Kamber (કમર)</label>
                   <input
                     type="text"
-                    value={measurements.pant_waist || ""}
-                    onChange={(e) => updateMeasurement("pant_waist", e.target.value)}
+                    value={measurements.kamber || ""}
+                    onChange={(e) => updateMeasurement("kamber", e.target.value)}
                     placeholder="e.g. 34"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Seat / Hips (સીટ)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">3) Sheet (સીટ)</label>
                   <input
                     type="text"
-                    value={measurements.pant_hips || ""}
-                    onChange={(e) => updateMeasurement("pant_hips", e.target.value)}
+                    value={measurements.sheet || ""}
+                    onChange={(e) => updateMeasurement("sheet", e.target.value)}
                     placeholder="e.g. 40"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Thigh (ઝાંગ)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">4) Jang (ઝાંગ)</label>
                   <input
                     type="text"
-                    value={measurements.thigh || ""}
-                    onChange={(e) => updateMeasurement("thigh", e.target.value)}
+                    value={measurements.jang || ""}
+                    onChange={(e) => updateMeasurement("jang", e.target.value)}
                     placeholder="e.g. 24"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Knee (ઘૂંટણ)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">5) Moli (મોરી)</label>
                   <input
                     type="text"
-                    value={measurements.knee || ""}
-                    onChange={(e) => updateMeasurement("knee", e.target.value)}
-                    placeholder="e.g. 18"
-                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
-                    style={{ borderColor: "hsl(var(--border))" }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Galo / Crotch (ગાળો)</label>
-                  <input
-                    type="text"
-                    value={measurements.galo || ""}
-                    onChange={(e) => updateMeasurement("galo", e.target.value)}
-                    placeholder="e.g. 26"
-                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
-                    style={{ borderColor: "hsl(var(--border))" }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Bottom Mori (મોરી)</label>
-                  <input
-                    type="text"
-                    value={measurements.bottom_mori || ""}
-                    onChange={(e) => updateMeasurement("bottom_mori", e.target.value)}
+                    value={measurements.moli || ""}
+                    onChange={(e) => updateMeasurement("moli", e.target.value)}
                     placeholder="e.g. 14"
+                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">6) Kistak (કિસ્તક / ગાળો)</label>
+                  <input
+                    type="text"
+                    value={measurements.kistak || ""}
+                    onChange={(e) => updateMeasurement("kistak", e.target.value)}
+                    placeholder="e.g. 26"
                     className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
                     style={{ borderColor: "hsl(var(--border))" }}
                   />

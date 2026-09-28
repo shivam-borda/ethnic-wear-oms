@@ -191,12 +191,30 @@ export const STATUS_LABELS: Record<StageStatus, string> = {
 
 export interface GarmentMeasurements {
   slip_number?: string;
+
+  // Upper Body Garment (ઉપરના કપડાનું માપ)
+  lambai?: string;        // 1) Lambai (લંબાઈ)
+  bai?: string;           // 2) Bai (બાઈ)
+  solder?: string;        // 3) Solder (સોલ્ડર)
+  chati?: string;         // 4) Chati (છાતી)
+  cap?: string;           // 5) Cap (કેપ)
+  coller?: string;        // 6) Coller (કોલર)
+
+  // Bottom Garment (બોટમનું માપ)
+  lambai_bottom?: string; // 1) Lambai (લંબાઈ)
+  kamber?: string;        // 2) Kamber (કમર)
+  sheet?: string;         // 3) Sheet (સીટ)
+  jang?: string;          // 4) Jang (ઝાંગ)
+  moli?: string;          // 5) Moli (મોરી)
+  kistak?: string;        // 6) Kistak (કિસ્તક)
+
+  notes?: string;
+
+  // Legacy fallback fields for backward compatibility
   kurta_length?: string;
-  chest?: string;
-  waist?: string;
-  hips?: string;
-  shoulder?: string;
   sleeve_length?: string;
+  shoulder?: string;
+  chest?: string;
   sleeve_opening?: string;
   collar_neck?: string;
   biceps?: string;
@@ -208,7 +226,8 @@ export interface GarmentMeasurements {
   knee?: string;
   galo?: string;
   bottom_mori?: string;
-  notes?: string;
+  waist?: string;
+  hips?: string;
 }
 
 export function parseMeasurements(raw?: string | null): GarmentMeasurements {
@@ -220,7 +239,28 @@ export function parseMeasurements(raw?: string | null): GarmentMeasurements {
         if (parsed.slip_number && parsed.slip_number.trim().startsWith('{')) {
           parsed.slip_number = '';
         }
-        return parsed;
+
+        const normalized: GarmentMeasurements = {
+          ...parsed,
+
+          // Upper Body
+          lambai: parsed.lambai || parsed.kurta_length || '',
+          bai: parsed.bai || parsed.sleeve_length || '',
+          solder: parsed.solder || parsed.shoulder || '',
+          chati: parsed.chati || parsed.chest || '',
+          cap: parsed.cap || parsed.cap_size || parsed.biceps || parsed.sleeve_opening || '',
+          coller: parsed.coller || parsed.collar_neck || '',
+
+          // Bottom
+          lambai_bottom: parsed.lambai_bottom || parsed.pant_lambai || parsed.pant_length || '',
+          kamber: parsed.kamber || parsed.pant_waist || parsed.waist || '',
+          sheet: parsed.sheet || parsed.pant_hips || parsed.hips || '',
+          jang: parsed.jang || parsed.thigh || '',
+          moli: parsed.moli || parsed.bottom_mori || '',
+          kistak: parsed.kistak || parsed.galo || '',
+        };
+
+        return normalized;
       }
     }
   } catch {}

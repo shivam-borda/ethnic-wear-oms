@@ -82,41 +82,37 @@ export function PrintableJobSheet({ order }: { order: Order }) {
         </div>
       </div>
 
-      {/* 3. Measurements Section (Upper & Lower Body) */}
+      {/* 3. Measurements Section (Upper & Bottom Garment) */}
       <div className="space-y-2.5">
         {/* Upper Body Garment Table */}
         <div className="border border-black rounded-sm overflow-hidden">
           <div className="bg-gray-100 border-b border-black px-2.5 py-1 font-bold text-[11px] uppercase flex flex-wrap items-center justify-between gap-1">
-            <span>👔 Upper Body Garment Measurements (ઉપરના કપડાનું માપ)</span>
-            <span className="text-[9px] font-normal text-gray-600">Kurta / Koti / Shirt / Jacket</span>
+            <span>👔 Upper Body Measurements (અપર બોડી - Kurta / Koti / Blazer)</span>
+            <span className="text-[9px] font-normal text-gray-600">Upper Body</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-0 divide-x divide-y divide-black text-center text-xs">
-            <PrintCell label="Length (લંબાઈ)" value={m.kurta_length} />
-            <PrintCell label="Chest (છાતી)" value={m.chest} />
-            <PrintCell label="Waist (કમર)" value={m.waist} />
-            <PrintCell label="Seat / Hips (સીટ)" value={m.hips} />
-            <PrintCell label="Shoulder (શોલ્ડર)" value={m.shoulder} />
-            <PrintCell label="Sleeve (બાઈ)" value={m.sleeve_length} />
-            <PrintCell label="Sleeve Mori (બાઈ મોરી)" value={m.sleeve_opening} />
-            <PrintCell label="Collar (કોલર)" value={m.collar_neck} />
-            <PrintCell label="Biceps (મુંઢો)" value={m.biceps} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-0 divide-x divide-y divide-black text-center text-xs">
+            <PrintCell label="1) Lambai (લંબાઈ)" value={m.lambai} />
+            <PrintCell label="2) Bai (બાઈ)" value={m.bai} />
+            <PrintCell label="3) Solder (સોલ્ડર)" value={m.solder} />
+            <PrintCell label="4) Chati (છાતી)" value={m.chati} />
+            <PrintCell label="5) Cap (કેપ)" value={m.cap} />
+            <PrintCell label="6) Coller (કોલર)" value={m.coller} />
           </div>
         </div>
 
-        {/* Lower Body Garment Table */}
+        {/* Bottom Garment Table */}
         <div className="border border-black rounded-sm overflow-hidden">
           <div className="bg-gray-100 border-b border-black px-2.5 py-1 font-bold text-[11px] uppercase flex flex-wrap items-center justify-between gap-1">
-            <span>👖 Lower Body Garment Measurements (નીચેના કપડાનું માપ)</span>
-            <span className="text-[9px] font-normal text-gray-600">Pant / Pyjama / Salwar / Chididar</span>
+            <span>👖 Bottom Garment Measurements (બોટમ - Pant / Pyjama)</span>
+            <span className="text-[9px] font-normal text-gray-600">Bottom</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-0 divide-x divide-y divide-black text-center text-xs">
-            <PrintCell label="Pant Length (લંબાઈ)" value={m.pant_length} />
-            <PrintCell label="Pant Waist (કમર)" value={m.pant_waist} />
-            <PrintCell label="Seat / Hips (સીટ)" value={m.pant_hips} />
-            <PrintCell label="Thigh (ઝાંગ)" value={m.thigh} />
-            <PrintCell label="Knee (ઘૂંટણ)" value={m.knee} />
-            <PrintCell label="Galo (ગાળો)" value={m.galo} />
-            <PrintCell label="Bottom Mori (મોરી)" value={m.bottom_mori} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-0 divide-x divide-y divide-black text-center text-xs">
+            <PrintCell label="1) Lambai (લંબાઈ)" value={m.lambai_bottom} />
+            <PrintCell label="2) Kamber (કમર)" value={m.kamber} />
+            <PrintCell label="3) Sheet (સીટ)" value={m.sheet} />
+            <PrintCell label="4) Jang (ઝાંગ)" value={m.jang} />
+            <PrintCell label="5) Moli (મોરી)" value={m.moli} />
+            <PrintCell label="6) Kistak (કિસ્તક)" value={m.kistak} />
           </div>
         </div>
       </div>

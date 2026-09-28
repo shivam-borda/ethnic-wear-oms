@@ -299,8 +299,8 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
         {/* Measurement Section if exists */}
         {order.stitching_measurement_number && (() => {
           const m = parseMeasurements(order.stitching_measurement_number);
-          const hasUpper = m.kurta_length || m.chest || m.waist || m.shoulder || m.sleeve_length || m.collar_neck;
-          const hasLower = m.pant_length || m.pant_waist || m.pant_hips || m.thigh || m.bottom_mori;
+          const hasUpper = m.lambai || m.bai || m.solder || m.chati || m.cap || m.coller || m.kurta_length || m.chest || m.shoulder;
+          const hasLower = m.lambai_bottom || m.kamber || m.sheet || m.jang || m.moli || m.kistak || m.pant_length || m.pant_waist;
 
           return (
             <div className="rounded-xl border bg-card p-4 sm:p-5 shadow-sm space-y-4" style={{ borderColor: "hsl(var(--border))" }}>
@@ -327,32 +327,28 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
 
               {hasUpper && (
                 <div className="space-y-2">
-                  <p className="text-xs font-bold text-primary uppercase tracking-wide">👔 Upper Body Garment</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    {m.kurta_length && <div className="bg-muted/50 p-2 rounded border">Length (લંબાઈ): <span className="font-bold">{m.kurta_length}</span></div>}
-                    {m.chest && <div className="bg-muted/50 p-2 rounded border">Chest (છાતી): <span className="font-bold">{m.chest}</span></div>}
-                    {m.waist && <div className="bg-muted/50 p-2 rounded border">Waist (કમર): <span className="font-bold">{m.waist}</span></div>}
-                    {m.hips && <div className="bg-muted/50 p-2 rounded border">Seat/Hips (સીટ): <span className="font-bold">{m.hips}</span></div>}
-                    {m.shoulder && <div className="bg-muted/50 p-2 rounded border">Shoulder (શોલ્ડર): <span className="font-bold">{m.shoulder}</span></div>}
-                    {m.sleeve_length && <div className="bg-muted/50 p-2 rounded border">Sleeve (બાઈ): <span className="font-bold">{m.sleeve_length}</span></div>}
-                    {m.sleeve_opening && <div className="bg-muted/50 p-2 rounded border">Sleeve Mori (બાઈ મોરી): <span className="font-bold">{m.sleeve_opening}</span></div>}
-                    {m.collar_neck && <div className="bg-muted/50 p-2 rounded border">Collar (કોલર): <span className="font-bold">{m.collar_neck}</span></div>}
-                    {m.biceps && <div className="bg-muted/50 p-2 rounded border">Biceps (મુંઢો): <span className="font-bold">{m.biceps}</span></div>}
+                  <p className="text-xs font-bold text-primary uppercase tracking-wide">👔 Upper Body Garment (અપર બોડી)</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                    {m.lambai && <div className="bg-muted/50 p-2 rounded border">1) Lambai (લંબાઈ): <span className="font-bold">{m.lambai}</span></div>}
+                    {m.bai && <div className="bg-muted/50 p-2 rounded border">2) Bai (બાઈ): <span className="font-bold">{m.bai}</span></div>}
+                    {m.solder && <div className="bg-muted/50 p-2 rounded border">3) Solder (સોલ્ડર): <span className="font-bold">{m.solder}</span></div>}
+                    {m.chati && <div className="bg-muted/50 p-2 rounded border">4) Chati (છાતી): <span className="font-bold">{m.chati}</span></div>}
+                    {m.cap && <div className="bg-muted/50 p-2 rounded border">5) Cap (કેપ): <span className="font-bold">{m.cap}</span></div>}
+                    {m.coller && <div className="bg-muted/50 p-2 rounded border">6) Coller (કોલર): <span className="font-bold">{m.coller}</span></div>}
                   </div>
                 </div>
               )}
 
               {hasLower && (
                 <div className="space-y-2 pt-2">
-                  <p className="text-xs font-bold text-primary uppercase tracking-wide">👖 Lower Body Garment</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                    {m.pant_length && <div className="bg-muted/50 p-2 rounded border">Pant Length (લંબાઈ): <span className="font-bold">{m.pant_length}</span></div>}
-                    {m.pant_waist && <div className="bg-muted/50 p-2 rounded border">Pant Waist (કમર): <span className="font-bold">{m.pant_waist}</span></div>}
-                    {m.pant_hips && <div className="bg-muted/50 p-2 rounded border">Seat/Hips (સીટ): <span className="font-bold">{m.pant_hips}</span></div>}
-                    {m.thigh && <div className="bg-muted/50 p-2 rounded border">Thigh (ઝાંગ): <span className="font-bold">{m.thigh}</span></div>}
-                    {m.knee && <div className="bg-muted/50 p-2 rounded border">Knee (ઘૂંટણ): <span className="font-bold">{m.knee}</span></div>}
-                    {m.galo && <div className="bg-muted/50 p-2 rounded border">Galo (ગાળો): <span className="font-bold">{m.galo}</span></div>}
-                    {m.bottom_mori && <div className="bg-muted/50 p-2 rounded border">Mori (મોરી): <span className="font-bold">{m.bottom_mori}</span></div>}
+                  <p className="text-xs font-bold text-primary uppercase tracking-wide">👖 Bottom Garment (બોટમ)</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                    {m.lambai_bottom && <div className="bg-muted/50 p-2 rounded border">1) Lambai (લંબાઈ): <span className="font-bold">{m.lambai_bottom}</span></div>}
+                    {m.kamber && <div className="bg-muted/50 p-2 rounded border">2) Kamber (કમર): <span className="font-bold">{m.kamber}</span></div>}
+                    {m.sheet && <div className="bg-muted/50 p-2 rounded border">3) Sheet (સીટ): <span className="font-bold">{m.sheet}</span></div>}
+                    {m.jang && <div className="bg-muted/50 p-2 rounded border">4) Jang (ઝાંગ): <span className="font-bold">{m.jang}</span></div>}
+                    {m.moli && <div className="bg-muted/50 p-2 rounded border">5) Moli (મોરી): <span className="font-bold">{m.moli}</span></div>}
+                    {m.kistak && <div className="bg-muted/50 p-2 rounded border">6) Kistak (કિસ્તક): <span className="font-bold">{m.kistak}</span></div>}
                   </div>
                 </div>
               )}
