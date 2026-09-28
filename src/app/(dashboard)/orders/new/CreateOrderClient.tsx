@@ -1,5 +1,6 @@
 "use client";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import ImageCropperModal from "@/components/ui/ImageCropperModal";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -58,6 +59,7 @@ export default function CreateOrderClient({
     defaultValues?.initialAttachments || []
   );
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [cropperData, setCropperData] = useState<{ src: string; title: string; onComplete: (file: File) => void } | null>(null);
   const [uploadingFabricAttachment, setUploadingFabricAttachment] = useState(false);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const fabricAttachmentInputRef = useRef<HTMLInputElement>(null);
@@ -128,51 +130,38 @@ export default function CreateOrderClient({
     files: FileList,
     defaultCategory: "reference" | "fabric" | "color" | "material" = "reference"
   ) => {
-    setUploadingAttachment(true);
-    try {
-      const newItems: OrderAttachmentFormData[] = [];
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        let imageUrl = "";
-
-        try {
-          const formData = new FormData();
-          formData.append("file", file);
-
-          const res = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          const data = await res.json();
-
-          if (res.ok && data.url) {
-            imageUrl = data.url;
-          } else {
-            imageUrl = await readFileAsDataUrl(file);
+    if (files.length === 0) return;
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropperData({
+        src: reader.result as string,
+        title: "Crop & Optimize Reference Attachment",
+        onComplete: async (croppedFile: File) => {
+          setCropperData(null);
+          setUploadingAttachment(true);
+          try {
+            const url = await uploadSingleFileToApi(croppedFile);
+            const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+            setAttachments((prev) => [
+              ...prev,
+              {
+                file_url: url,
+                file_name: cleanName || `Attachment ${prev.length + 1}`,
+                file_type: "image/jpeg",
+                category: defaultCategory,
+              },
+            ]);
+            toast.success("Attachment cropped & uploaded!");
+          } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Upload failed");
+          } finally {
+            setUploadingAttachment(false);
           }
-        } catch {
-          imageUrl = await readFileAsDataUrl(file);
-        }
-
-        const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-
-        newItems.push({
-          file_url: imageUrl,
-          file_name: cleanName || `Image ${attachments.length + i + 1}`,
-          file_type: file.type,
-          category: defaultCategory,
-        });
-      }
-
-      setAttachments((prev) => [...prev, ...newItems]);
-      toast.success(`${newItems.length} image(s) uploaded!`);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Image upload failed");
-    } finally {
-      setUploadingAttachment(false);
-    }
+        },
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const [form, setForm] = useState<OrderData>({
@@ -291,22 +280,37 @@ export default function CreateOrderClient({
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
     );
 
-  const handleImageUpload = async (idx: number, file: File) => {
-    setUploadingIdx(idx);
-    try {
-      const supabase = createClient();
-      const ext = file.name.split(".").pop();
-      const path = `fabric-images/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from("fabric-images").upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data: urlData } = supabase.storage.from("fabric-images").getPublicUrl(path);
-      updateItem(idx, "fabric_image_url", urlData.publicUrl);
-      toast.success("Image uploaded!");
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setUploadingIdx(null);
-    }
+  const uploadSingleFileToApi = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const data = await res.json();
+    if (!res.ok || !data.url) throw new Error(data.error || "Upload failed");
+    return data.url;
+  };
+
+  const handleImageUpload = async (idx: number, rawFile: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropperData({
+        src: reader.result as string,
+        title: "Crop & Optimize Fabric Image",
+        onComplete: async (croppedFile: File) => {
+          setCropperData(null);
+          setUploadingIdx(idx);
+          try {
+            const url = await uploadSingleFileToApi(croppedFile);
+            updateItem(idx, "fabric_image_url", url);
+            toast.success("Fabric image cropped & uploaded!");
+          } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Upload failed");
+          } finally {
+            setUploadingIdx(null);
+          }
+        },
+      });
+    };
+    reader.readAsDataURL(rawFile);
   };
 
   const addNewParty = async () => {
@@ -885,8 +889,21 @@ export default function CreateOrderClient({
                         id={`item-qty-${idx}`}
                         type="number"
                         min={1}
-                        value={item.quantity}
-                        onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 1)}
+                        value={item.quantity === 0 || (item.quantity as unknown) === "" ? "" : item.quantity}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (raw === "") {
+                            updateItem(idx, "quantity", "" as unknown as number);
+                          } else {
+                            const val = parseInt(raw, 10);
+                            updateItem(idx, "quantity", isNaN(val) ? ("" as unknown as number) : val);
+                          }
+                        }}
+                        onBlur={() => {
+                          if (!item.quantity || Number(item.quantity) < 1) {
+                            updateItem(idx, "quantity", 1);
+                          }
+                        }}
                         className="w-full px-3 py-2.5 rounded-lg border bg-card text-sm outline-none"
                         style={{ borderColor: "hsl(var(--border))" }}
                       />
@@ -1233,6 +1250,14 @@ export default function CreateOrderClient({
       )}
 
 
+    {cropperData && (
+        <ImageCropperModal
+          imageSrc={cropperData.src}
+          title={cropperData.title}
+          onCropComplete={cropperData.onComplete}
+          onCancel={() => setCropperData(null)}
+        />
+      )}
     </form>
   );
 }
