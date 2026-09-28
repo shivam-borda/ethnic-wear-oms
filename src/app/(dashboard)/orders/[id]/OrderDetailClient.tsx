@@ -84,6 +84,7 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
   });
   const [updatingStage, setUpdatingStage] = useState<string | null>(null);
   const [deletingOrder, setDeletingOrder] = useState(false);
+  const [updatingOrderStatus, setUpdatingOrderStatus] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [lightboxImages, setLightboxImages] = useState<{ url: string; title?: string }[]>([]);
@@ -162,14 +163,27 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
   };
 
   const handleStatusUpdate = async (newStatus: string) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("oms_orders")
-      .update({ status: newStatus })
-      .eq("id", order.id);
-    if (error) { toast.error("Failed to update status"); return; }
-    setOrder((prev) => ({ ...prev, status: newStatus as typeof prev.status }));
-    toast.success(`Order marked as ${newStatus}`);
+    if (!newStatus || newStatus === order.status) return;
+    setUpdatingOrderStatus(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("oms_orders")
+        .update({ status: newStatus })
+        .eq("id", order.id);
+
+      if (error) {
+        toast.error(`Failed to update status: ${error.message}`);
+        return;
+      }
+
+      setOrder((prev) => ({ ...prev, status: newStatus as typeof prev.status }));
+      toast.success(`Order status updated to ${newStatus.toUpperCase()}`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update status");
+    } finally {
+      setUpdatingOrderStatus(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -207,18 +221,26 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="w-32 sm:w-36">
-                <SearchableSelect
-                  options={[
-                    { value: "active", label: "Active" },
-                    { value: "delivered", label: "Delivered" },
-                    { value: "cancelled", label: "Cancelled" },
-                  ]}
+              <div className="relative">
+                <select
+                  id="order-status-select"
+                  disabled={updatingOrderStatus}
                   value={order.status}
-                  onChange={(val) => handleStatusUpdate(val)}
-                  placeholder="Status"
-                  searchPlaceholder="Search status..."
-                />
+                  onChange={(e) => handleStatusUpdate(e.target.value)}
+                  className={cn(
+                    "appearance-none px-3.5 py-2 pr-8 rounded-lg text-xs sm:text-sm font-bold shadow-sm outline-none cursor-pointer border transition-colors disabled:opacity-50",
+                    order.status === "active" && "bg-amber-500 text-black border-amber-400 font-extrabold",
+                    order.status === "delivered" && "bg-emerald-600 text-white border-emerald-500 font-extrabold",
+                    order.status === "cancelled" && "bg-rose-600 text-white border-rose-500 font-extrabold"
+                  )}
+                >
+                  <option value="active" className="bg-card text-foreground font-semibold">● Active (ચાલુ)</option>
+                  <option value="delivered" className="bg-card text-foreground font-semibold">✓ Delivered (ડીલીવર)</option>
+                  <option value="cancelled" className="bg-card text-foreground font-semibold">✕ Cancelled (કેન્સલ)</option>
+                </select>
+                <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-current text-xs font-bold">
+                  ▼
+                </div>
               </div>
               <button
                 onClick={handlePrint}
