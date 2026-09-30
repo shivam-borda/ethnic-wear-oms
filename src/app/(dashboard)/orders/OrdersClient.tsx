@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Order } from "@/types";
 import { formatDate, getDeliveryLabel, getCurrentStageLabel } from "@/lib/utils";
 import { toast } from "sonner";
+import { recordOrderDeletion } from "@/lib/orderLogs";
 import { createClient } from "@/lib/supabase/client";
 
 interface Props {
@@ -157,7 +158,12 @@ export default function OrdersClient({ initialOrders }: Props) {
 
   const handleDelete = async (id: string, orderNo: string) => {
     if (!confirm(`Delete order ${orderNo}? This cannot be undone.`)) return;
+    const orderToDelete = orders.find((o) => o.id === id);
     const supabase = createClient();
+    if (orderToDelete) {
+      const { data: { user } } = await supabase.auth.getUser();
+      recordOrderDeletion(orderToDelete, user?.user_metadata?.full_name || user?.email || "Staff");
+    }
     const { error } = await supabase.from("oms_orders").delete().eq("id", id);
     if (error) { toast.error("Failed to delete order"); return; }
     toast.success(`Order ${orderNo} deleted`);

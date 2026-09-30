@@ -55,6 +55,7 @@ export default async function EditOrderPage({ params }: Props) {
       parties={(parties || []) as Party[]}
       fabricParties={(fabricParties || []) as FabricParty[]}
       editOrderId={id}
+      originalOrder={typedOrder}
       defaultValues={{
         party_id: typedOrder.party_id || "",
         phone: typedOrder.phone || "",

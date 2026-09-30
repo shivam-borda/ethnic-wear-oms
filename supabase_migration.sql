@@ -274,3 +274,23 @@ CREATE INDEX IF NOT EXISTS idx_oms_orders_created_at ON public.oms_orders (creat
 CREATE INDEX IF NOT EXISTS idx_oms_orders_stitching_measurement ON public.oms_orders (created_at DESC) WHERE stitching_measurement_number IS NOT NULL AND stitching_measurement_number != '';
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items (order_id);
 CREATE INDEX IF NOT EXISTS idx_attachments_order_id ON public.attachments (order_id);
+
+-- ============================================================
+-- 15. ORDER ACTIVITY & AUDIT LOGS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.order_activity_logs (
+  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id            UUID NOT NULL REFERENCES public.oms_orders(id) ON DELETE CASCADE,
+  action              TEXT NOT NULL,
+  description         TEXT,
+  field_changes       JSONB,
+  performed_by        UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  performed_by_name   TEXT,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_order_activity_logs_order_id ON public.order_activity_logs (order_id);
+CREATE INDEX IF NOT EXISTS idx_order_activity_logs_created_at ON public.order_activity_logs (created_at DESC);
+
+ALTER TABLE public.order_activity_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "order_activity_logs_all" ON public.order_activity_logs FOR ALL TO authenticated USING (true) WITH CHECK (true);

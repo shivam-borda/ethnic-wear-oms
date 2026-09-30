@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import type { Party, FabricParty, OrderItemFormData, ItemType, GarmentMeasurements, OrderAttachmentFormData } from "@/types";
+import type { Party, FabricParty, OrderItemFormData, ItemType, GarmentMeasurements, OrderAttachmentFormData, Order } from "@/types";
+import { extractOrderLogs, encodeMeasurementsWithLogs, diffOrderChanges, createInitialOrderLog, type OrderActivityLog } from "@/lib/orderLogs";
 import { getAttachmentCategory } from "@/types";
 import { ITEM_TYPE_LABELS, parseMeasurements } from "@/types";
 
@@ -25,6 +26,7 @@ interface Props {
   parties: Party[];
   fabricParties: FabricParty[];
   editOrderId?: string;
+  originalOrder?: Order;
   defaultValues?: Partial<OrderData> & { initialAttachments?: OrderAttachmentFormData[] };
 }
 
@@ -42,6 +44,7 @@ export default function CreateOrderClient({
   parties: initialParties,
   fabricParties: initialFabricParties,
   editOrderId,
+  originalOrder,
   defaultValues,
 }: Props) {
   const router = useRouter();
@@ -330,10 +333,52 @@ export default function CreateOrderClient({
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
-      const hasAnyMeasurement = Object.values(measurements).some((v) => v && v.trim().length > 0);
-      const encodedMeasurement = hasAnyMeasurement ? JSON.stringify(measurements) : (form.stitching_measurement_number || null);
+      const userName = user?.user_metadata?.full_name || user?.email || "Staff";
 
       if (editOrderId) {
+        // Extract existing logs
+        const existingLogs = extractOrderLogs(originalOrder?.stitching_measurement_number || defaultValues?.stitching_measurement_number);
+        let updatedLogs = existingLogs;
+
+        if (originalOrder) {
+          const changes = diffOrderChanges({
+            originalOrder,
+            form,
+            newMeasurements: measurements,
+            newAttachments: attachments,
+            parties,
+            fabricParties,
+          });
+
+          if (changes.length > 0) {
+            const editLog: OrderActivityLog = {
+              id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              order_id: editOrderId,
+              action: "update",
+              title: "Order Details Updated",
+              title_gu: "ઓર્ડર વિગતો સુધારી",
+              description: `${changes.length} field(s) updated`,
+              changes,
+              created_at: new Date().toISOString(),
+              user_name: userName,
+            };
+            updatedLogs = [editLog, ...existingLogs];
+
+            try {
+              await supabase.from("order_activity_logs").insert([{
+                order_id: editOrderId,
+                action: "update",
+                description: editLog.description,
+                field_changes: editLog.changes,
+                performed_by: user?.id || null,
+                performed_by_name: userName,
+              }]);
+            } catch {}
+          }
+        }
+
+        const encodedMeasurement = encodeMeasurementsWithLogs(measurements, updatedLogs);
+
         // Update existing order
         const { error: orderErr } = await supabase
           .from("oms_orders")
@@ -391,6 +436,23 @@ export default function CreateOrderClient({
         router.refresh();
         router.push(`/orders/${editOrderId}`);
       } else {
+        const selectedParty = parties.find((p) => p.id === form.party_id);
+        const initialLog = createInitialOrderLog({
+          orderId: "pending",
+          partyName: selectedParty?.name || "Customer",
+          phone: form.phone,
+          orderDate: form.order_date,
+          deliveryDate: form.delivery_date,
+          vyaparOrderNumber: form.vyapar_order_number,
+          measurements,
+          items: form.items,
+          attachmentsCount: attachments.length,
+          notes: form.notes,
+          userName,
+        });
+
+        const encodedMeasurement = encodeMeasurementsWithLogs(measurements, [initialLog]);
+
         // Insert new order
         const { data: orderData, error: orderErr } = await supabase
           .from("oms_orders")
@@ -407,6 +469,17 @@ export default function CreateOrderClient({
           .select()
           .single();
         if (orderErr) throw orderErr;
+
+        try {
+          await supabase.from("order_activity_logs").insert([{
+            order_id: orderData.id,
+            action: "create",
+            description: initialLog.description,
+            field_changes: initialLog.changes,
+            performed_by: user?.id || null,
+            performed_by_name: userName,
+          }]);
+        } catch {}
 
         const itemsToInsert = form.items.map((item, i) => ({
           order_id: orderData.id,

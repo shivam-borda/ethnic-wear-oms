@@ -4,6 +4,8 @@ import ImageLightbox from "@/components/ui/ImageLightbox";
 import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import OrderActivityLogSection from "@/components/OrderActivityLogSection";
+import { extractOrderLogs, encodeMeasurementsWithLogs, recordOrderDeletion, type OrderActivityLog } from "@/lib/orderLogs";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +24,7 @@ import { formatDate, formatDateTime, cn } from "@/lib/utils";
 
 interface Props {
   order: Order;
+  additionalLogs?: OrderActivityLog[];
 }
 
 const STAGES: Stage[] = ["fabric", "work", "stitching", "delivery"];
@@ -70,7 +73,7 @@ function ProductionProgress({ item }: { item: OrderItem }) {
   );
 }
 
-export default function OrderDetailClient({ order: initialOrder }: Props) {
+export default function OrderDetailClient({ order: initialOrder, additionalLogs = [] }: Props) {
   const router = useRouter();
   const [order, setOrder] = useState<Order>(initialOrder);
 
@@ -134,6 +137,31 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
         changed_by: user?.id || null,
       }]);
 
+      try {
+        const existingLogs = extractOrderLogs(order.stitching_measurement_number);
+        const stageLog: OrderActivityLog = {
+          id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          order_id: order.id,
+          action: "stage_change",
+          title: `${ITEM_TYPE_LABELS[item.item_type]} - ${STAGE_LABELS[stage]}: ${STATUS_LABELS[newStatus]}`,
+          title_gu: `${STAGE_LABELS[stage]} સ્ટેજ: ${STATUS_LABELS[newStatus]}`,
+          description: `Stage updated from ${STATUS_LABELS[oldStatus]} to ${STATUS_LABELS[newStatus]}`,
+          changes: [{
+            field: `${ITEM_TYPE_LABELS[item.item_type]} ${STAGE_LABELS[stage]} Stage`,
+            label_gu: `${STAGE_LABELS[stage]} સ્ટેજ`,
+            old_value: STATUS_LABELS[oldStatus],
+            new_value: STATUS_LABELS[newStatus],
+          }],
+          created_at: now,
+          user_name: user?.user_metadata?.full_name || user?.email || "Staff",
+        };
+        const updatedLogs = [stageLog, ...existingLogs];
+        const measurements = parseMeasurements(order.stitching_measurement_number);
+        const encoded = encodeMeasurementsWithLogs(measurements, updatedLogs);
+        await supabase.from("oms_orders").update({ stitching_measurement_number: encoded }).eq("id", order.id);
+        setOrder((prev) => ({ ...prev, stitching_measurement_number: encoded }));
+      } catch {}
+
       toast.success(`${STAGE_LABELS[stage]} stage updated to ${STATUS_LABELS[newStatus]}`);
 
       // Update local state
@@ -167,9 +195,39 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
     setUpdatingOrderStatus(true);
     try {
       const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      const oldStatus = order.status;
+      const userName = user?.user_metadata?.full_name || user?.email || "Staff";
+
+      const existingLogs = extractOrderLogs(order.stitching_measurement_number);
+      const nowIso = new Date().toISOString();
+      const statusLog: OrderActivityLog = {
+        id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        order_id: order.id,
+        action: "status_change",
+        title: `Status Changed to ${newStatus.toUpperCase()}`,
+        title_gu: `ઓર્ડર સ્ટેટસ ${newStatus.toUpperCase()} કર્યું`,
+        description: `Order status changed from ${oldStatus.toUpperCase()} to ${newStatus.toUpperCase()}`,
+        changes: [{
+          field: "Order Status",
+          label_gu: "ઓર્ડર સ્ટેટસ",
+          old_value: oldStatus.toUpperCase(),
+          new_value: newStatus.toUpperCase(),
+        }],
+        created_at: nowIso,
+        user_name: userName,
+      };
+
+      const updatedLogs = [statusLog, ...existingLogs];
+      const measurements = parseMeasurements(order.stitching_measurement_number);
+      const encoded = encodeMeasurementsWithLogs(measurements, updatedLogs);
+
       const { error } = await supabase
         .from("oms_orders")
-        .update({ status: newStatus })
+        .update({
+          status: newStatus,
+          stitching_measurement_number: encoded,
+        })
         .eq("id", order.id);
 
       if (error) {
@@ -177,7 +235,22 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
         return;
       }
 
-      setOrder((prev) => ({ ...prev, status: newStatus as typeof prev.status }));
+      try {
+        await supabase.from("order_activity_logs").insert([{
+          order_id: order.id,
+          action: "status_change",
+          description: statusLog.description,
+          field_changes: statusLog.changes,
+          performed_by: user?.id || null,
+          performed_by_name: userName,
+        }]);
+      } catch {}
+
+      setOrder((prev) => ({
+        ...prev,
+        status: newStatus as typeof prev.status,
+        stitching_measurement_number: encoded,
+      }));
       toast.success(`Order status updated to ${newStatus.toUpperCase()}`);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to update status");
@@ -190,6 +263,9 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
     if (!confirm(`Delete order ${order.order_number}? This will permanently delete all items and progress data.`)) return;
     setDeletingOrder(true);
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    recordOrderDeletion(order, user?.user_metadata?.full_name || user?.email || "Staff");
+
     const { error } = await supabase.from("oms_orders").delete().eq("id", order.id);
     if (error) { toast.error("Failed to delete order"); setDeletingOrder(false); return; }
     toast.success("Order deleted");
@@ -562,6 +638,9 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
             </div>
           ))}
         </div>
+
+        {/* Order Activity & Audit Trail (Last Section) */}
+        <OrderActivityLogSection order={order} additionalLogs={additionalLogs} />
       </div>
 
       {/* Interactive Print Job Sheet Modal for Mobile & Screen View */}

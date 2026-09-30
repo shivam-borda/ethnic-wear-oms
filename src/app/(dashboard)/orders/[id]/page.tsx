@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import OrderDetailClient from "./OrderDetailClient";
 import type { Order } from "@/types";
+import type { OrderActivityLog } from "@/lib/orderLogs";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -29,6 +30,18 @@ export default async function OrderDetailPage({ params }: Props) {
 
   if (!order) notFound();
 
+  let activityLogs: OrderActivityLog[] = [];
+  try {
+    const { data: logs } = await supabase
+      .from("order_activity_logs")
+      .select("*")
+      .eq("order_id", id)
+      .order("created_at", { ascending: false });
+    if (logs && Array.isArray(logs)) {
+      activityLogs = logs;
+    }
+  } catch {}
+
   // Sort items by position
   const sortedOrder = {
     ...order,
@@ -37,5 +50,5 @@ export default async function OrderDetailPage({ params }: Props) {
     ),
   };
 
-  return <OrderDetailClient order={sortedOrder as Order} />;
+  return <OrderDetailClient order={sortedOrder as Order} additionalLogs={activityLogs} />;
 }

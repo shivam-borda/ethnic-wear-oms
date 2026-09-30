@@ -1,3 +1,5 @@
+import type { OrderActivityLog, FieldChange } from "@/lib/orderLogs";
+export type { OrderActivityLog, FieldChange };
 // Core Types for Ethnic Wear OMS
 
 export type UserRole = 'admin' | 'staff';
@@ -103,6 +105,7 @@ export interface Order {
   party?: Party;
   order_items?: OrderItem[];
   attachments?: Attachment[];
+  activity_logs?: OrderActivityLog[];
 }
 
 export interface Attachment {
