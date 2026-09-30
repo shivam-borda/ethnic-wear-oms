@@ -28,7 +28,7 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
         <div className="flex items-center justify-end gap-2 pb-2 border-b border-gray-200 print:hidden">
           <button
             type="button"
-            onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${order.id}`, `Tailor_JobSheet_${order.order_number || order.id}`)}
+            onClick={() => downloadJobSheetAsPDF(order, `Tailor_JobSheet_${order.order_number || order.id}`)}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-sm transition-all"
           >
             <span>📥</span> Download PDF

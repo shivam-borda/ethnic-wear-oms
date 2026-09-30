@@ -205,7 +205,7 @@ export default function MeasurementsClient({ initialOrders }: Props) {
                     👁️ Details
                   </button>
                   <button
-                    onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${order.id}`, `Tailor_JobSheet_${order.order_number || order.id}`)}
+                    onClick={() => downloadJobSheetAsPDF(order, `Tailor_JobSheet_${order.order_number || order.id}`)}
                     className="py-2 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-opacity text-center flex items-center justify-center gap-1"
                   >
                     <span>📥</span> Download PDF
@@ -269,7 +269,7 @@ export default function MeasurementsClient({ initialOrders }: Props) {
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
                   type="button"
-                  onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${selectedOrder.id}`, `Tailor_JobSheet_${selectedOrder.order_number || selectedOrder.id}`)}
+                  onClick={() => downloadJobSheetAsPDF(selectedOrder, `Tailor_JobSheet_${selectedOrder.order_number || selectedOrder.id}`)}
                   className="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 flex items-center gap-1 transition-opacity shadow-sm"
                 >
                   <span>📥</span> Download PDF

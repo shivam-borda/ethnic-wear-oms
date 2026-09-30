@@ -530,7 +530,7 @@ export default function OrdersClient({ initialOrders }: Props) {
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
                   type="button"
-                  onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${selectedOrderForPrint.id}`, `Tailor_JobSheet_${selectedOrderForPrint.order_number || selectedOrderForPrint.id}`)}
+                  onClick={() => downloadJobSheetAsPDF(selectedOrderForPrint, `Tailor_JobSheet_${selectedOrderForPrint.order_number || selectedOrderForPrint.id}`)}
                   className="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 flex items-center gap-1 transition-opacity shadow-sm"
                 >
                   <span>📥</span> Download PDF
