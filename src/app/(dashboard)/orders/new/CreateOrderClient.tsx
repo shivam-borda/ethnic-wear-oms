@@ -170,21 +170,25 @@ export default function CreateOrderClient({
     setAttachments((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  // Initialize measurements state
+  const initialMeasurements = parseMeasurements(defaultValues?.stitching_measurement_number);
+  const cleanSlip = (initialMeasurements.slip_number || "").trim().startsWith("{")
+    ? ""
+    : (initialMeasurements.slip_number || (defaultValues?.stitching_measurement_number && !defaultValues.stitching_measurement_number.trim().startsWith("{") ? defaultValues.stitching_measurement_number : ""));
+
   const [form, setForm] = useState<OrderData>({
     party_id: defaultValues?.party_id || "",
     phone: defaultValues?.phone || "",
     order_date: defaultValues?.order_date || format(new Date(), "yyyy-MM-dd"),
     delivery_date: defaultValues?.delivery_date || "",
     vyapar_order_number: defaultValues?.vyapar_order_number || "",
-    stitching_measurement_number: defaultValues?.stitching_measurement_number || "",
+    stitching_measurement_number: cleanSlip,
     notes: defaultValues?.notes || "",
     items: defaultValues?.items || [],
   });
 
-  // Initialize measurements state
-  const initialMeasurements = parseMeasurements(defaultValues?.stitching_measurement_number);
   const [measurements, setMeasurements] = useState<GarmentMeasurements>({
-    slip_number: initialMeasurements.slip_number || defaultValues?.stitching_measurement_number || "",
+    slip_number: cleanSlip,
     // Upper Body
     lambai: initialMeasurements.lambai || "",
     bai: initialMeasurements.bai || "",
@@ -630,7 +634,7 @@ export default function CreateOrderClient({
             <input
               id="order-measurement-no"
               type="text"
-              value={measurements.slip_number || form.stitching_measurement_number}
+              value={measurements.slip_number || ""}
               onChange={(e) => {
                 updateMeasurement("slip_number", e.target.value);
                 updateForm("stitching_measurement_number", e.target.value);
@@ -657,8 +661,8 @@ export default function CreateOrderClient({
           <div className="flex items-center gap-2 text-primary">
             <span className="text-lg">📏</span>
             <span>Measurement Section (માપણી વિગત)</span>
-            {measurements.slip_number && (
-              <span className="text-xs font-normal px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 ml-2">
+            {measurements.slip_number && !measurements.slip_number.startsWith("{") && (
+              <span className="text-xs font-normal px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 ml-2 truncate max-w-[200px]">
                 Slip: {measurements.slip_number}
               </span>
             )}
