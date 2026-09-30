@@ -4,11 +4,27 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 
+async function convertImageToDataUrl(url: string): Promise<string> {
+  if (!url || url.startsWith("data:")) return url;
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return url;
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(url);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return url;
+  }
+}
+
 export async function downloadJobSheetAsPDF(elementId: string, filename: string = "Tailor-JobSheet.pdf") {
   let element = document.getElementById(elementId);
   
   if (!element) {
-    // Fallback search for any printable job sheet element
     element = document.querySelector("[id^='printable-job-sheet']");
   }
 
@@ -17,18 +33,41 @@ export async function downloadJobSheetAsPDF(elementId: string, filename: string 
     return;
   }
 
-  const toastId = toast.loading("Generating PDF file...");
+  const toastId = toast.loading("Preparing PDF file...");
 
   try {
+    const imgs = Array.from(element.querySelectorAll("img"));
+    const originalSrcs = imgs.map((img) => img.src);
+
+    // Convert images to base64 Data URLs if cross-origin
+    await Promise.all(
+      imgs.map(async (img) => {
+        if (img.src && !img.src.startsWith("data:")) {
+          const dataUrl = await convertImageToDataUrl(img.src);
+          if (dataUrl && dataUrl.startsWith("data:")) {
+            img.src = dataUrl;
+          }
+        }
+      })
+    );
+
     const canvas = await html2canvas(element as HTMLElement, {
       scale: 2,
       useCORS: true,
-      allowTaint: true,
+      allowTaint: false,
       backgroundColor: "#ffffff",
       logging: false,
+      imageTimeout: 15000,
     });
 
-    const imgData = canvas.toDataURL("image/png");
+    // Restore original image sources
+    imgs.forEach((img, i) => {
+      if (originalSrcs[i]) {
+        img.src = originalSrcs[i];
+      }
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -43,13 +82,13 @@ export async function downloadJobSheetAsPDF(elementId: string, filename: string 
     let heightLeft = imgHeight;
     let position = 0;
 
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
     heightLeft -= pdfHeight;
 
     while (heightLeft > 0) {
       position = heightLeft - pdfHeight;
       pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
       heightLeft -= pdfHeight;
     }
 
@@ -57,7 +96,10 @@ export async function downloadJobSheetAsPDF(elementId: string, filename: string 
     pdf.save(cleanFilename);
     toast.success("Downloaded PDF successfully!", { id: toastId });
   } catch (err: any) {
-    console.error("PDF Download error:", err);
-    toast.error("Could not generate PDF. Please use Print -> Save as PDF.", { id: toastId });
+    console.error("PDF Download error details:", err);
+    toast.error("Opening print dialog to Save as PDF...", { id: toastId });
+    setTimeout(() => {
+      window.print();
+    }, 400);
   }
 }
