@@ -116,7 +116,7 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
             <PrintCell label="4) Chati (છાતી)" value={m.chati} />
             <PrintCell label="5) Pet (પેટ)" value={m.pet} />
             <PrintCell label="6) Sheet (સીટ)" value={m.sheet_upper} />
-            <PrintCell label="7) Cap (કેપ)" value={m.cap} />
+            <PrintCell label="7) Cuff (કફ)" value={m.cap} />
             <PrintCell label="8) Coller (કોલર)" value={m.coller} />
           </div>
         </div>

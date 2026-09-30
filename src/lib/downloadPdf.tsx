@@ -97,7 +97,7 @@ export async function downloadJobSheetAsPDF(
 
     const upperData = [
       ["1) Lambai", m.lambai || "—", "2) Bai", m.bai || "—", "3) Solder", m.solder || "—", "4) Chati", m.chati || "—"],
-      ["5) Pet", m.pet || "—", "6) Sheet", m.sheet_upper || "—", "7) Cap", m.cap || "—", "8) Coller", m.coller || "—"],
+      ["5) Pet", m.pet || "—", "6) Sheet", m.sheet_upper || "—", "7) Cuff (કફ)", m.cap || "—", "8) Coller", m.coller || "—"],
     ];
 
     autoTable(pdf, {

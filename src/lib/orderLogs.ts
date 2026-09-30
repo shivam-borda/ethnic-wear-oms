@@ -35,7 +35,7 @@ const UPPER_MEASUREMENT_LABELS: Record<string, { en: string; gu: string }> = {
   chati: { en: "Chati (Chest)", gu: "છાતી" },
   pet: { en: "Pet (Stomach)", gu: "પેટ" },
   sheet_upper: { en: "Upper Sheet (Hips)", gu: "સીટ" },
-  cap: { en: "Cap (Biceps)", gu: "કેપ" },
+  cap: { en: "Cuff", gu: "કફ" },
   coller: { en: "Coller (Collar/Neck)", gu: "કોલર" },
 };
 

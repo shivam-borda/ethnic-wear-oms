@@ -202,7 +202,7 @@ export interface GarmentMeasurements {
   chati?: string;         // 4) Chati (છાતી)
   pet?: string;           // 5) Pet (પેટ)
   sheet_upper?: string;   // 6) Sheet (સીટ)
-  cap?: string;           // 7) Cap (કેપ)
+  cap?: string;           // 7) Cuff (કફ)
   coller?: string;        // 8) Coller (કોલર)
 
   // Bottom Garment (બોટમનું માપ)

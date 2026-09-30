@@ -425,7 +425,7 @@ export default function OrderDetailClient({ order: initialOrder, additionalLogs 
                     {m.chati && <div className="bg-muted/50 p-2 rounded border">4) Chati (છાતી): <span className="font-bold">{m.chati}</span></div>}
                     {m.pet && <div className="bg-muted/50 p-2 rounded border">5) Pet (પેટ): <span className="font-bold">{m.pet}</span></div>}
                     {m.sheet_upper && <div className="bg-muted/50 p-2 rounded border">6) Sheet (સીટ): <span className="font-bold">{m.sheet_upper}</span></div>}
-                    {m.cap && <div className="bg-muted/50 p-2 rounded border">7) Cap (કેપ): <span className="font-bold">{m.cap}</span></div>}
+                    {m.cap && <div className="bg-muted/50 p-2 rounded border">7) Cuff (કફ): <span className="font-bold">{m.cap}</span></div>}
                     {m.coller && <div className="bg-muted/50 p-2 rounded border">8) Coller (કોલર): <span className="font-bold">{m.coller}</span></div>}
                   </div>
                 </div>

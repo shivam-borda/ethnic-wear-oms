@@ -748,7 +748,7 @@ export default function CreateOrderClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">7) Cap (કેપ)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">7) Cuff (કફ)</label>
                   <input
                     type="text"
                     value={measurements.cap || ""}
