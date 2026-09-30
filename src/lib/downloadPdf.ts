@@ -6,6 +6,19 @@ import { toast } from "sonner";
 
 async function convertImageToDataUrl(url: string): Promise<string> {
   if (!url || url.startsWith("data:")) return url;
+
+  // First try server proxy to bypass CORS restrictions on S3/external images
+  try {
+    const proxyRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(url)}`);
+    if (proxyRes.ok) {
+      const json = await proxyRes.json();
+      if (json.dataUrl) return json.dataUrl;
+    }
+  } catch (err) {
+    console.warn("Proxy image load failed, attempting direct fetch fallback", err);
+  }
+
+  // Direct CORS fetch fallback
   try {
     const res = await fetch(url, { mode: "cors" });
     if (!res.ok) return url;
@@ -33,13 +46,13 @@ export async function downloadJobSheetAsPDF(elementId: string, filename: string 
     return;
   }
 
-  const toastId = toast.loading("Preparing PDF file...");
+  const toastId = toast.loading("Generating direct PDF download...");
 
   try {
     const imgs = Array.from(element.querySelectorAll("img"));
     const originalSrcs = imgs.map((img) => img.src);
 
-    // Convert images to base64 Data URLs if cross-origin
+    // Convert external/S3 images to base64 Data URLs via server proxy
     await Promise.all(
       imgs.map(async (img) => {
         if (img.src && !img.src.startsWith("data:")) {
@@ -94,12 +107,9 @@ export async function downloadJobSheetAsPDF(elementId: string, filename: string 
 
     const cleanFilename = filename.endsWith(".pdf") ? filename : `${filename}.pdf`;
     pdf.save(cleanFilename);
-    toast.success("Downloaded PDF successfully!", { id: toastId });
+    toast.success("PDF downloaded directly!", { id: toastId });
   } catch (err: any) {
     console.error("PDF Download error details:", err);
-    toast.error("Opening print dialog to Save as PDF...", { id: toastId });
-    setTimeout(() => {
-      window.print();
-    }, 400);
+    toast.error("Failed to generate PDF download.", { id: toastId });
   }
 }
