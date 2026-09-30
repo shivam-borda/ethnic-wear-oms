@@ -35,6 +35,41 @@ async function convertImageToDataUrl(url: string): Promise<string> {
   }
 }
 
+/**
+ * Walk every element in the cloned DOM and inline resolved RGB colors
+ * so html2canvas never sees lab()/oklch()/oklab() color functions.
+ */
+function sanitizeColorsForHtml2Canvas(clonedEl: HTMLElement) {
+  const allEls = [clonedEl, ...Array.from(clonedEl.querySelectorAll("*"))];
+  for (const el of allEls) {
+    const htmlEl = el as HTMLElement;
+    const computed = window.getComputedStyle(htmlEl);
+
+    // Inline key color properties as resolved rgb() values
+    htmlEl.style.color = computed.color;
+    htmlEl.style.backgroundColor = computed.backgroundColor;
+    htmlEl.style.borderTopColor = computed.borderTopColor;
+    htmlEl.style.borderRightColor = computed.borderRightColor;
+    htmlEl.style.borderBottomColor = computed.borderBottomColor;
+    htmlEl.style.borderLeftColor = computed.borderLeftColor;
+    htmlEl.style.outlineColor = computed.outlineColor;
+    htmlEl.style.textDecorationColor = computed.textDecorationColor;
+
+    // Also remove any CSS custom properties (--var) that may reference lab()
+    const inlineStyle = htmlEl.style;
+    const propsToRemove: string[] = [];
+    for (let i = 0; i < inlineStyle.length; i++) {
+      const prop = inlineStyle[i];
+      if (prop.startsWith("--")) {
+        propsToRemove.push(prop);
+      }
+    }
+    for (const prop of propsToRemove) {
+      inlineStyle.removeProperty(prop);
+    }
+  }
+}
+
 export async function downloadJobSheetAsPDF(
   target: string | Order,
   filename?: string
@@ -52,10 +87,8 @@ export async function downloadJobSheetAsPDF(
         elementToCapture = document.querySelector("[id^='printable-job-sheet']");
       }
     } else if (target && typeof target === "object") {
-      // Check if element is already rendered in DOM
       elementToCapture = document.getElementById(`printable-job-sheet-${target.id}`);
-      
-      // If not in DOM, render temporary off-screen container
+
       if (!elementToCapture) {
         tempContainer = document.createElement("div");
         tempContainer.style.position = "fixed";
@@ -69,7 +102,7 @@ export async function downloadJobSheetAsPDF(
         root = createRoot(tempContainer);
         root.render(<PrintableJobSheet order={target} showActions={false} />);
 
-        await new Promise((r) => setTimeout(r, 450));
+        await new Promise((r) => setTimeout(r, 500));
         elementToCapture = (tempContainer.firstElementChild as HTMLElement) || tempContainer;
         if (!filename) {
           filename = `Tailor_JobSheet_${target.order_number || target.id}.pdf`;
@@ -82,7 +115,7 @@ export async function downloadJobSheetAsPDF(
       return;
     }
 
-    // Convert images in element to base64 Data URLs
+    // Convert images to base64 Data URLs
     const imgs = Array.from(elementToCapture.querySelectorAll("img"));
     const originalSrcs = imgs.map((img) => img.src);
 
@@ -104,8 +137,13 @@ export async function downloadJobSheetAsPDF(
       backgroundColor: "#ffffff",
       logging: false,
       imageTimeout: 15000,
+      onclone: (_clonedDoc: Document, clonedEl: HTMLElement) => {
+        // Resolve all lab()/oklch() colors to rgb() before html2canvas parses them
+        sanitizeColorsForHtml2Canvas(clonedEl);
+      },
     });
 
+    // Restore original image sources on the live DOM
     if (!tempContainer) {
       imgs.forEach((img, i) => {
         if (originalSrcs[i]) {
