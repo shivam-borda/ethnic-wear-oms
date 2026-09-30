@@ -1,5 +1,5 @@
 "use client";
-
+import { downloadJobSheetAsPDF } from "@/lib/downloadPdf";
 import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS } from "@/types";
 import SearchableSelect from "@/components/ui/SearchableSelect";
@@ -528,6 +528,13 @@ export default function OrdersClient({ initialOrders }: Props) {
                 </h2>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${selectedOrderForPrint.id}`, `Tailor_JobSheet_${selectedOrderForPrint.order_number || selectedOrderForPrint.id}`)}
+                  className="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 flex items-center gap-1 transition-opacity shadow-sm"
+                >
+                  <span>📥</span> Download PDF
+                </button>
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch(err) {} }} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch(err) {} }}

@@ -1,4 +1,5 @@
 "use client";
+import { downloadJobSheetAsPDF } from "@/lib/downloadPdf";
 import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
 import { useState, useMemo } from "react";
@@ -204,6 +205,12 @@ export default function MeasurementsClient({ initialOrders }: Props) {
                     👁️ Details
                   </button>
                   <button
+                    onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${order.id}`, `Tailor_JobSheet_${order.order_number || order.id}`)}
+                    className="py-2 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-opacity text-center flex items-center justify-center gap-1"
+                  >
+                    <span>📥</span> Download PDF
+                  </button>
+                  <button
                     onClick={() => openDetails(order)}
                     className="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90 text-center flex items-center justify-center gap-1"
                     style={{ background: "hsl(var(--primary))" }}
@@ -260,6 +267,13 @@ export default function MeasurementsClient({ initialOrders }: Props) {
                 </h2>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${selectedOrder.id}`, `Tailor_JobSheet_${selectedOrder.order_number || selectedOrder.id}`)}
+                  className="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 flex items-center gap-1 transition-opacity shadow-sm"
+                >
+                  <span>📥</span> Download PDF
+                </button>
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch(err) {} }} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch(err) {} }}

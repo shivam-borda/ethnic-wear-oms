@@ -1,5 +1,5 @@
 "use client";
-
+import { downloadJobSheetAsPDF } from "@/lib/downloadPdf";
 import ImageLightbox from "@/components/ui/ImageLightbox";
 import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
@@ -243,6 +243,12 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
                 </div>
               </div>
               <button
+                onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${order.id}`, `Tailor_JobSheet_${order.order_number || order.id}`)}
+                className="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <span>📥</span> Download PDF
+              </button>
+              <button
                 onClick={handlePrint}
                 className="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:opacity-90 flex items-center gap-1.5 shadow-sm"
                 style={{ background: "hsl(40,85%,52%)", color: "hsl(20,15%,10%)" }}
@@ -316,13 +322,21 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
                     </span>
                   )}
                 </div>
-                <button
-                  onClick={handlePrint}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg border hover:bg-muted transition-colors flex items-center gap-1.5 self-start sm:self-auto"
-                  style={{ borderColor: "hsl(var(--border))" }}
-                >
-                  <span>🖨️</span> Open & Print Tailor Job Sheet
-                </button>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <button
+                    onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${order.id}`, `Tailor_JobSheet_${order.order_number || order.id}`)}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1.5"
+                  >
+                    <span>📥</span> Download PDF
+                  </button>
+                  <button
+                    onClick={handlePrint}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg border hover:bg-muted transition-colors flex items-center gap-1.5"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  >
+                    <span>🖨️</span> Print Job Sheet
+                  </button>
+                </div>
               </div>
 
               {hasUpper && (
@@ -562,6 +576,13 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
                 </h2>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${order.id}`, `Tailor_JobSheet_${order.order_number || order.id}`)}
+                  className="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 flex items-center gap-1 transition-opacity shadow-sm"
+                >
+                  <span>📥</span> Download PDF
+                </button>
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch(err) {} }} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch(err) {} }}

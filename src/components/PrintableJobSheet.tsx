@@ -6,8 +6,9 @@ import { BulletPointsList } from "@/components/ui/BulletPoints";
 import { format } from "date-fns";
 import type { Order } from "@/types";
 import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS, getAttachmentCategory } from "@/types";
+import { downloadJobSheetAsPDF } from "@/lib/downloadPdf";
 
-export function PrintableJobSheet({ order }: { order: Order }) {
+export function PrintableJobSheet({ order, showActions = false }: { order: Order; showActions?: boolean }) {
   const fabricAttachments = (order.attachments || []).filter((a) => {
     const c = getAttachmentCategory(a);
     return c === "fabric" || c === "color" || c === "material";
@@ -22,7 +23,25 @@ export function PrintableJobSheet({ order }: { order: Order }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   return (
-    <div className="w-full max-w-[800px] mx-auto p-2 sm:p-6 bg-white text-black space-y-3 font-sans text-xs">
+    <div id={`printable-job-sheet-${order.id}`} className="w-full max-w-[800px] mx-auto p-2 sm:p-6 bg-white text-black space-y-3 font-sans text-xs">
+      {showActions && (
+        <div className="flex items-center justify-end gap-2 pb-2 border-b border-gray-200 print:hidden">
+          <button
+            type="button"
+            onClick={() => downloadJobSheetAsPDF(`printable-job-sheet-${order.id}`, `Tailor_JobSheet_${order.order_number || order.id}`)}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-sm transition-all"
+          >
+            <span>📥</span> Download PDF
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-black hover:bg-gray-800 text-white flex items-center gap-1.5 shadow-sm transition-all"
+          >
+            <span>🖨️</span> Print Sheet
+          </button>
+        </div>
+      )}
       {/* 1. Shop Header */}
       <div className="border-b-2 border-black pb-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
         <div>
