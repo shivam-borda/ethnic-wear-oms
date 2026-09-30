@@ -197,8 +197,10 @@ export interface GarmentMeasurements {
   bai?: string;           // 2) Bai (બાઈ)
   solder?: string;        // 3) Solder (સોલ્ડર)
   chati?: string;         // 4) Chati (છાતી)
-  cap?: string;           // 5) Cap (કેપ)
-  coller?: string;        // 6) Coller (કોલર)
+  pet?: string;           // 5) Pet (પેટ)
+  sheet_upper?: string;   // 6) Sheet (સીટ)
+  cap?: string;           // 7) Cap (કેપ)
+  coller?: string;        // 8) Coller (કોલર)
 
   // Bottom Garment (બોટમનું માપ)
   lambai_bottom?: string; // 1) Lambai (લંબાઈ)
@@ -215,6 +217,8 @@ export interface GarmentMeasurements {
   sleeve_length?: string;
   shoulder?: string;
   chest?: string;
+  stomach?: string;
+  upper_sheet?: string;
   sleeve_opening?: string;
   collar_neck?: string;
   biceps?: string;

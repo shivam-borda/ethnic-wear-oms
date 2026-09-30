@@ -187,6 +187,8 @@ export default function CreateOrderClient({
     bai: initialMeasurements.bai || "",
     solder: initialMeasurements.solder || "",
     chati: initialMeasurements.chati || "",
+    pet: initialMeasurements.pet || "",
+    sheet_upper: initialMeasurements.sheet_upper || "",
     cap: initialMeasurements.cap || "",
     coller: initialMeasurements.coller || "",
     // Bottom
@@ -601,7 +603,7 @@ export default function CreateOrderClient({
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <span>👔</span> Upper Body Garment (અપર બોડી - Kurta / Koti / Blazer)
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1">1) Lambai (લંબાઈ)</label>
                   <input
@@ -647,7 +649,29 @@ export default function CreateOrderClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">5) Cap (કેપ)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">5) Pet (પેટ)</label>
+                  <input
+                    type="text"
+                    value={measurements.pet || ""}
+                    onChange={(e) => updateMeasurement("pet", e.target.value)}
+                    placeholder="e.g. 34"
+                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">6) Sheet (સીટ)</label>
+                  <input
+                    type="text"
+                    value={measurements.sheet_upper || ""}
+                    onChange={(e) => updateMeasurement("sheet_upper", e.target.value)}
+                    placeholder="e.g. 40"
+                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">7) Cap (કેપ)</label>
                   <input
                     type="text"
                     value={measurements.cap || ""}
@@ -658,7 +682,7 @@ export default function CreateOrderClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">6) Coller (કોલર)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">8) Coller (કોલર)</label>
                   <input
                     type="text"
                     value={measurements.coller || ""}

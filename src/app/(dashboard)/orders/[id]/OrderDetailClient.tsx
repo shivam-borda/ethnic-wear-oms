@@ -299,7 +299,7 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
         {/* Measurement Section if exists */}
         {order.stitching_measurement_number && (() => {
           const m = parseMeasurements(order.stitching_measurement_number);
-          const hasUpper = m.lambai || m.bai || m.solder || m.chati || m.cap || m.coller || m.kurta_length || m.chest || m.shoulder;
+          const hasUpper = m.lambai || m.bai || m.solder || m.chati || m.pet || m.sheet_upper || m.cap || m.coller || m.kurta_length || m.chest || m.shoulder || m.stomach;
           const hasLower = m.lambai_bottom || m.kamber || m.sheet || m.jang || m.moli || m.kistak || m.pant_length || m.pant_waist;
 
           return (
@@ -328,13 +328,15 @@ export default function OrderDetailClient({ order: initialOrder }: Props) {
               {hasUpper && (
                 <div className="space-y-2">
                   <p className="text-xs font-bold text-primary uppercase tracking-wide">👔 Upper Body Garment (અપર બોડી)</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 text-xs">
                     {m.lambai && <div className="bg-muted/50 p-2 rounded border">1) Lambai (લંબાઈ): <span className="font-bold">{m.lambai}</span></div>}
                     {m.bai && <div className="bg-muted/50 p-2 rounded border">2) Bai (બાઈ): <span className="font-bold">{m.bai}</span></div>}
                     {m.solder && <div className="bg-muted/50 p-2 rounded border">3) Solder (સોલ્ડર): <span className="font-bold">{m.solder}</span></div>}
                     {m.chati && <div className="bg-muted/50 p-2 rounded border">4) Chati (છાતી): <span className="font-bold">{m.chati}</span></div>}
-                    {m.cap && <div className="bg-muted/50 p-2 rounded border">5) Cap (કેપ): <span className="font-bold">{m.cap}</span></div>}
-                    {m.coller && <div className="bg-muted/50 p-2 rounded border">6) Coller (કોલર): <span className="font-bold">{m.coller}</span></div>}
+                    {m.pet && <div className="bg-muted/50 p-2 rounded border">5) Pet (પેટ): <span className="font-bold">{m.pet}</span></div>}
+                    {m.sheet_upper && <div className="bg-muted/50 p-2 rounded border">6) Sheet (સીટ): <span className="font-bold">{m.sheet_upper}</span></div>}
+                    {m.cap && <div className="bg-muted/50 p-2 rounded border">7) Cap (કેપ): <span className="font-bold">{m.cap}</span></div>}
+                    {m.coller && <div className="bg-muted/50 p-2 rounded border">8) Coller (કોલર): <span className="font-bold">{m.coller}</span></div>}
                   </div>
                 </div>
               )}

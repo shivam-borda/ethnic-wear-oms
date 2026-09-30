@@ -90,13 +90,15 @@ export function PrintableJobSheet({ order }: { order: Order }) {
             <span>👔 Upper Body Measurements (અપર બોડી - Kurta / Koti / Blazer)</span>
             <span className="text-[9px] font-normal text-gray-600">Upper Body</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-0 divide-x divide-y divide-black text-center text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-0 divide-x divide-y divide-black text-center text-xs">
             <PrintCell label="1) Lambai (લંબાઈ)" value={m.lambai} />
             <PrintCell label="2) Bai (બાઈ)" value={m.bai} />
             <PrintCell label="3) Solder (સોલ્ડર)" value={m.solder} />
             <PrintCell label="4) Chati (છાતી)" value={m.chati} />
-            <PrintCell label="5) Cap (કેપ)" value={m.cap} />
-            <PrintCell label="6) Coller (કોલર)" value={m.coller} />
+            <PrintCell label="5) Pet (પેટ)" value={m.pet} />
+            <PrintCell label="6) Sheet (સીટ)" value={m.sheet_upper} />
+            <PrintCell label="7) Cap (કેપ)" value={m.cap} />
+            <PrintCell label="8) Coller (કોલર)" value={m.coller} />
           </div>
         </div>
 

@@ -182,7 +182,7 @@ export default function MeasurementsClient({ initialOrders }: Props) {
                       <p className="font-semibold text-primary">👔 Upper (અપર)</p>
                       <p className="text-muted-foreground">Lambai (લંબાઈ): <span className="font-medium text-foreground">{m.lambai || m.kurta_length || "-"}</span></p>
                       <p className="text-muted-foreground">Chati (છાતી): <span className="font-medium text-foreground">{m.chati || m.chest || "-"}</span></p>
-                      <p className="text-muted-foreground">Solder (સોલ્ડર): <span className="font-medium text-foreground">{m.solder || m.shoulder || "-"}</span></p>
+                      <p className="text-muted-foreground">Pet (પેટ): <span className="font-medium text-foreground">{m.pet || m.stomach || "-"}</span></p>
                     </div>
                     {/* Bottom */}
                     <div className="bg-muted/50 p-2 rounded-lg space-y-0.5">
