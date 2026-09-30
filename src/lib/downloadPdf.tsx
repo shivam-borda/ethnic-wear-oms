@@ -1,301 +1,267 @@
 "use client";
 
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
-import { createRoot } from "react-dom/client";
-import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import type { Order } from "@/types";
-
-async function convertImageToDataUrl(url: string): Promise<string> {
-  if (!url || url.startsWith("data:")) return url;
-
-  try {
-    const proxyRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(url)}`);
-    if (proxyRes.ok) {
-      const json = await proxyRes.json();
-      if (json.dataUrl) return json.dataUrl;
-    }
-  } catch (err) {
-    console.warn("Proxy image load failed, fallback to direct fetch", err);
-  }
-
-  try {
-    const res = await fetch(url, { mode: "cors" });
-    if (!res.ok) return url;
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(url);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return url;
-  }
-}
-
-/**
- * Inline ALL computed styles on every element and remove stylesheets
- * so html2canvas never encounters lab()/oklch() from Tailwind v4.
- */
-function fullyInlineStyles(clonedDoc: Document, clonedEl: HTMLElement) {
-  // 1. Remove all stylesheets and style tags from cloned document
-  const styleSheets = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-  styleSheets.forEach((s) => s.remove());
-
-  // 2. Inline computed styles on every element
-  const STYLE_PROPS = [
-    "color", "backgroundColor", "borderTopColor", "borderRightColor",
-    "borderBottomColor", "borderLeftColor", "outlineColor",
-    "textDecorationColor", "boxShadow",
-    "font", "fontSize", "fontWeight", "fontFamily", "fontStyle",
-    "lineHeight", "letterSpacing", "textAlign", "textTransform",
-    "display", "position", "top", "right", "bottom", "left",
-    "width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight",
-    "margin", "marginTop", "marginRight", "marginBottom", "marginLeft",
-    "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
-    "borderWidth", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth",
-    "borderStyle", "borderTopStyle", "borderRightStyle", "borderBottomStyle", "borderLeftStyle",
-    "borderRadius", "borderTopLeftRadius", "borderTopRightRadius",
-    "borderBottomLeftRadius", "borderBottomRightRadius",
-    "overflow", "overflowX", "overflowY", "opacity",
-    "flexDirection", "flexWrap", "justifyContent", "alignItems", "alignSelf",
-    "flex", "flexGrow", "flexShrink", "flexBasis",
-    "gap", "rowGap", "columnGap",
-    "gridTemplateColumns", "gridTemplateRows", "gridColumn", "gridRow",
-    "textOverflow", "whiteSpace", "wordBreak", "wordWrap",
-    "verticalAlign", "tableLayout", "borderCollapse", "borderSpacing",
-    "visibility", "zIndex", "cursor",
-    "backgroundImage", "backgroundSize", "backgroundPosition", "backgroundRepeat",
-  ] as const;
-
-  const allEls = [clonedEl, ...Array.from(clonedEl.querySelectorAll("*"))];
-  
-  // We need to read computed styles from the ORIGINAL document elements
-  // But since onclone gives us the cloned doc BEFORE stylesheets are removed,
-  // we should read computed styles first, then remove stylesheets
-  // However the cloned doc styles may differ. So let's take a different approach:
-  // Read from original, apply to clone.
-  
-  // Actually in onclone, styles are still applied in the clone at this point.
-  // So let's read computed from clone elements, store them, remove sheets, then apply.
-  
-  const computedMap = new Map<HTMLElement, Record<string, string>>();
-  
-  for (const el of allEls) {
-    const htmlEl = el as HTMLElement;
-    const computed = clonedDoc.defaultView?.getComputedStyle(htmlEl) || window.getComputedStyle(htmlEl);
-    const styles: Record<string, string> = {};
-    for (const prop of STYLE_PROPS) {
-      try {
-        styles[prop] = computed[prop as any] || "";
-      } catch {
-        // skip
-      }
-    }
-    computedMap.set(htmlEl, styles);
-  }
-  
-  // Now remove stylesheets (already done above, but they were removed before computing - fix order)
-  // Actually we removed them at the top. Let's restructure:
-  // We need to compute BEFORE removing. Let me fix this.
-}
-
-function sanitizeClonedDocument(clonedDoc: Document, clonedEl: HTMLElement) {
-  const STYLE_PROPS = [
-    "color", "backgroundColor", "borderTopColor", "borderRightColor",
-    "borderBottomColor", "borderLeftColor", "outlineColor",
-    "textDecorationColor",
-    "font", "fontSize", "fontWeight", "fontFamily", "fontStyle",
-    "lineHeight", "letterSpacing", "textAlign", "textTransform",
-    "display", "position", "top", "right", "bottom", "left",
-    "width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight",
-    "margin", "marginTop", "marginRight", "marginBottom", "marginLeft",
-    "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
-    "borderWidth", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth",
-    "borderStyle", "borderTopStyle", "borderRightStyle", "borderBottomStyle", "borderLeftStyle",
-    "borderRadius", "borderTopLeftRadius", "borderTopRightRadius",
-    "borderBottomLeftRadius", "borderBottomRightRadius",
-    "overflow", "overflowX", "overflowY", "opacity",
-    "flexDirection", "flexWrap", "justifyContent", "alignItems", "alignSelf",
-    "flex", "flexGrow", "flexShrink", "flexBasis",
-    "gap", "rowGap", "columnGap",
-    "gridTemplateColumns", "gridTemplateRows", "gridColumn", "gridRow",
-    "textOverflow", "whiteSpace", "wordBreak",
-    "verticalAlign", "tableLayout", "borderCollapse", "borderSpacing",
-    "visibility", "zIndex",
-    "backgroundSize", "backgroundPosition", "backgroundRepeat",
-  ];
-
-  const allEls = [clonedEl, ...Array.from(clonedEl.querySelectorAll("*"))];
-  const win = clonedDoc.defaultView || window;
-
-  // Step 1: Read all computed styles while stylesheets are still active
-  const styleData: Array<{ el: HTMLElement; styles: Record<string, string> }> = [];
-
-  for (const el of allEls) {
-    const htmlEl = el as HTMLElement;
-    const computed = win.getComputedStyle(htmlEl);
-    const styles: Record<string, string> = {};
-    for (const prop of STYLE_PROPS) {
-      try {
-        styles[prop] = (computed as any)[prop] || "";
-      } catch {
-        // skip
-      }
-    }
-    styleData.push({ el: htmlEl, styles });
-  }
-
-  // Step 2: Remove ALL stylesheets and style tags from cloned doc
-  const sheets = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-  sheets.forEach((s) => s.remove());
-
-  // Step 3: Apply the saved computed styles as inline styles
-  for (const { el, styles } of styleData) {
-    for (const [prop, value] of Object.entries(styles)) {
-      if (value) {
-        try {
-          (el.style as any)[prop] = value;
-        } catch {
-          // skip
-        }
-      }
-    }
-    // Remove any CSS custom properties
-    const propsToRemove: string[] = [];
-    for (let i = 0; i < el.style.length; i++) {
-      const p = el.style[i];
-      if (p.startsWith("--")) propsToRemove.push(p);
-    }
-    for (const p of propsToRemove) {
-      el.style.removeProperty(p);
-    }
-  }
-}
+import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS, getAttachmentCategory } from "@/types";
+import { format } from "date-fns";
 
 export async function downloadJobSheetAsPDF(
   target: string | Order,
   filename?: string
 ) {
-  const toastId = toast.loading("Generating direct PDF download...");
-  let tempContainer: HTMLDivElement | null = null;
-  let root: any = null;
+  const toastId = toast.loading("Generating PDF...");
 
   try {
-    let elementToCapture: HTMLElement | null = null;
+    let order: Order | null = null;
 
     if (typeof target === "string") {
-      elementToCapture = document.getElementById(target);
-      if (!elementToCapture) {
-        elementToCapture = document.querySelector("[id^='printable-job-sheet']");
-      }
-    } else if (target && typeof target === "object") {
-      elementToCapture = document.getElementById(`printable-job-sheet-${target.id}`);
-
-      if (!elementToCapture) {
-        tempContainer = document.createElement("div");
-        tempContainer.style.position = "fixed";
-        tempContainer.style.left = "-9999px";
-        tempContainer.style.top = "0";
-        tempContainer.style.width = "800px";
-        tempContainer.style.backgroundColor = "#ffffff";
-        tempContainer.style.zIndex = "-9999";
-        document.body.appendChild(tempContainer);
-
-        root = createRoot(tempContainer);
-        root.render(<PrintableJobSheet order={target} showActions={false} />);
-
-        await new Promise((r) => setTimeout(r, 500));
-        elementToCapture = (tempContainer.firstElementChild as HTMLElement) || tempContainer;
-        if (!filename) {
-          filename = `Tailor_JobSheet_${target.order_number || target.id}.pdf`;
-        }
-      }
+      toast.error("Please pass an order object for PDF download.", { id: toastId });
+      return;
+    } else {
+      order = target;
     }
 
-    if (!elementToCapture) {
-      toast.error("Could not find or create job sheet layout.", { id: toastId });
+    if (!order) {
+      toast.error("No order data found.", { id: toastId });
       return;
     }
 
-    // Convert images to base64 Data URLs
-    const imgs = Array.from(elementToCapture.querySelectorAll("img"));
-    const originalSrcs = imgs.map((img) => img.src);
+    const m = parseMeasurements(order.stitching_measurement_number);
+    const slipNo = getCleanSlipNumber(order);
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const margin = 10;
+    const contentW = pageW - margin * 2;
+    let y = margin;
 
-    await Promise.all(
-      imgs.map(async (img) => {
-        if (img.src && !img.src.startsWith("data:")) {
-          const dataUrl = await convertImageToDataUrl(img.src);
-          if (dataUrl && dataUrl.startsWith("data:")) {
-            img.src = dataUrl;
+    // Helper functions
+    const addText = (text: string, x: number, yy: number, opts?: { size?: number; bold?: boolean; align?: "left" | "center" | "right"; maxW?: number }) => {
+      pdf.setFontSize(opts?.size || 10);
+      pdf.setFont("helvetica", opts?.bold ? "bold" : "normal");
+      if (opts?.maxW) {
+        pdf.text(text, x, yy, { maxWidth: opts.maxW, align: opts?.align || "left" });
+      } else {
+        pdf.text(text, x, yy, { align: opts?.align || "left" });
+      }
+    };
+
+    const addLine = (x1: number, y1: number, x2: number, y2: number) => {
+      pdf.setLineWidth(0.3);
+      pdf.setDrawColor(0);
+      pdf.line(x1, y1, x2, y2);
+    };
+
+    // === 1. HEADER ===
+    addText("AAHMAN ETHNIC WEAR", pageW / 2, y + 5, { size: 18, bold: true, align: "center" });
+    y += 8;
+    addText("Premium Tailor Job Sheet", pageW / 2, y + 4, { size: 10, bold: false, align: "center" });
+    y += 8;
+    addLine(margin, y, pageW - margin, y);
+    y += 4;
+
+    // === 2. ORDER INFO TABLE ===
+    const orderDate = order.order_date ? format(new Date(order.order_date), "dd/MM/yyyy") : "N/A";
+    const deliveryDate = order.delivery_date ? format(new Date(order.delivery_date), "dd/MM/yyyy") : "N/A";
+    const partyName = order.party?.name || "N/A";
+    const phone = order.phone || order.party?.phone || "N/A";
+    const vyaparNo = order.vyapar_order_number || "N/A";
+
+    const infoData = [
+      ["Slip #", slipNo, "Order #", order.order_number || "N/A"],
+      ["Customer", partyName, "Phone", phone],
+      ["Order Date", orderDate, "Delivery Date", deliveryDate],
+      ["Vyapar #", vyaparNo, "Total Items", String(order.order_items?.length || 0)],
+    ];
+
+    autoTable(pdf, {
+      startY: y,
+      body: infoData,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 28, fillColor: [245, 245, 245] },
+        1: { cellWidth: contentW / 2 - 28 },
+        2: { fontStyle: "bold", cellWidth: 28, fillColor: [245, 245, 245] },
+        3: { cellWidth: contentW / 2 - 28 },
+      },
+      margin: { left: margin, right: margin },
+    });
+
+    y = (pdf as any).lastAutoTable.finalY + 4;
+
+    // === 3. UPPER BODY MEASUREMENTS ===
+    addText("Upper Body Measurements (Kurta / Koti / Blazer)", margin, y + 3, { size: 10, bold: true });
+    y += 5;
+
+    const upperData = [
+      ["1) Lambai", m.lambai || "—", "2) Bai", m.bai || "—", "3) Solder", m.solder || "—", "4) Chati", m.chati || "—"],
+      ["5) Pet", m.pet || "—", "6) Sheet", m.sheet_upper || "—", "7) Cap", m.cap || "—", "8) Coller", m.coller || "—"],
+    ];
+
+    autoTable(pdf, {
+      startY: y,
+      body: upperData,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 2, halign: "center", lineColor: [0, 0, 0], lineWidth: 0.2 },
+      columnStyles: {
+        0: { fontStyle: "bold", fillColor: [240, 240, 240], cellWidth: contentW / 8 },
+        1: { cellWidth: contentW / 8 },
+        2: { fontStyle: "bold", fillColor: [240, 240, 240], cellWidth: contentW / 8 },
+        3: { cellWidth: contentW / 8 },
+        4: { fontStyle: "bold", fillColor: [240, 240, 240], cellWidth: contentW / 8 },
+        5: { cellWidth: contentW / 8 },
+        6: { fontStyle: "bold", fillColor: [240, 240, 240], cellWidth: contentW / 8 },
+        7: { cellWidth: contentW / 8 },
+      },
+      margin: { left: margin, right: margin },
+    });
+
+    y = (pdf as any).lastAutoTable.finalY + 4;
+
+    // === 4. BOTTOM GARMENT MEASUREMENTS ===
+    addText("Bottom Garment Measurements (Pant / Pyjama)", margin, y + 3, { size: 10, bold: true });
+    y += 5;
+
+    const bottomData = [
+      ["1) Lambai", m.lambai_bottom || "—", "2) Kamber", m.kamber || "—", "3) Sheet", m.sheet || "—"],
+      ["4) Jang", m.jang || "—", "5) Moli", m.moli || "—", "6) Kistak", m.kistak || "—"],
+    ];
+
+    autoTable(pdf, {
+      startY: y,
+      body: bottomData,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 2, halign: "center", lineColor: [0, 0, 0], lineWidth: 0.2 },
+      columnStyles: {
+        0: { fontStyle: "bold", fillColor: [240, 240, 240], cellWidth: contentW / 6 },
+        1: { cellWidth: contentW / 6 },
+        2: { fontStyle: "bold", fillColor: [240, 240, 240], cellWidth: contentW / 6 },
+        3: { cellWidth: contentW / 6 },
+        4: { fontStyle: "bold", fillColor: [240, 240, 240], cellWidth: contentW / 6 },
+        5: { cellWidth: contentW / 6 },
+      },
+      margin: { left: margin, right: margin },
+    });
+
+    y = (pdf as any).lastAutoTable.finalY + 4;
+
+    // === 5. ORDERED ITEMS ===
+    if (order.order_items && order.order_items.length > 0) {
+      addText(`Ordered Items Summary (${order.order_items.length})`, margin, y + 3, { size: 10, bold: true });
+      y += 5;
+
+      const itemRows = order.order_items.map((item, idx) => [
+        String(idx + 1),
+        ITEM_TYPE_LABELS[item.item_type] || item.item_type,
+        String(item.quantity),
+        item.fabric_party?.name || "—",
+        [item.fabric_details, item.special_instructions, item.notes].filter(Boolean).join(" | ") || "—",
+      ]);
+
+      autoTable(pdf, {
+        startY: y,
+        head: [["#", "Item Type", "Qty", "Fabric Party", "Details & Instructions"]],
+        body: itemRows,
+        theme: "grid",
+        styles: { fontSize: 8, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
+        headStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0], fontStyle: "bold" },
+        columnStyles: {
+          0: { cellWidth: 8, halign: "center" },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 12, halign: "center" },
+          3: { cellWidth: 30 },
+        },
+        margin: { left: margin, right: margin },
+      });
+
+      y = (pdf as any).lastAutoTable.finalY + 4;
+    }
+
+    // === 6. NOTES ===
+    if (order.notes) {
+      addText("Fabric & Design Points:", margin, y + 3, { size: 10, bold: true });
+      y += 6;
+      addText(order.notes, margin + 2, y, { size: 9, maxW: contentW - 4 });
+      const lines = pdf.splitTextToSize(order.notes, contentW - 4);
+      y += lines.length * 4 + 4;
+    }
+
+    // === 7. ATTACHMENTS (as image embeds if possible) ===
+    const allAttachments = order.attachments || [];
+    const fabricAtts = allAttachments.filter(a => { const c = getAttachmentCategory(a); return c === "fabric" || c === "color" || c === "material"; });
+    const refAtts = allAttachments.filter(a => getAttachmentCategory(a) === "reference");
+
+    for (const group of [
+      { label: "Fabric & Material Samples", atts: fabricAtts },
+      { label: "Design & Style Reference Images", atts: refAtts },
+    ]) {
+      if (group.atts.length > 0) {
+        // Check if we need a new page
+        if (y > pdf.internal.pageSize.getHeight() - 40) {
+          pdf.addPage();
+          y = margin;
+        }
+        addText(`${group.label} (${group.atts.length})`, margin, y + 3, { size: 10, bold: true });
+        y += 6;
+
+        let xPos = margin;
+        const imgSize = 35;
+        for (const att of group.atts) {
+          try {
+            // Fetch image via proxy and embed
+            const proxyRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(att.file_url)}`);
+            if (proxyRes.ok) {
+              const json = await proxyRes.json();
+              if (json.dataUrl) {
+                if (xPos + imgSize > pageW - margin) {
+                  xPos = margin;
+                  y += imgSize + 6;
+                }
+                if (y + imgSize > pdf.internal.pageSize.getHeight() - 15) {
+                  pdf.addPage();
+                  y = margin;
+                  xPos = margin;
+                }
+                pdf.addImage(json.dataUrl, "JPEG", xPos, y, imgSize, imgSize);
+                // Add filename label
+                pdf.setFontSize(6);
+                pdf.text(att.file_name || "Image", xPos + imgSize / 2, y + imgSize + 3, { align: "center", maxWidth: imgSize });
+                xPos += imgSize + 4;
+              }
+            }
+          } catch {
+            // Skip failed images
           }
         }
-      })
-    );
-
-    const canvas = await html2canvas(elementToCapture, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: "#ffffff",
-      logging: false,
-      imageTimeout: 15000,
-      onclone: (clonedDoc: Document, clonedEl: HTMLElement) => {
-        // Fully inline computed RGB styles and strip all stylesheets
-        // This prevents html2canvas from ever seeing lab()/oklch() colors
-        sanitizeClonedDocument(clonedDoc, clonedEl);
-      },
-    });
-
-    // Restore original image sources on the live DOM
-    if (!tempContainer) {
-      imgs.forEach((img, i) => {
-        if (originalSrcs[i]) {
-          img.src = originalSrcs[i];
-        }
-      });
+        y += imgSize + 8;
+      }
     }
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.95);
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
-
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight;
-
-    while (heightLeft > 0) {
-      position = heightLeft - pdfHeight;
+    // === 8. SIGNATURES ===
+    if (y > pdf.internal.pageSize.getHeight() - 35) {
       pdf.addPage();
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
+      y = margin;
     }
+    const sigY = pdf.internal.pageSize.getHeight() - 25;
+    addLine(margin, sigY, pageW - margin, sigY);
+    addText("Aahman Ethnic Wear OMS", margin, sigY + 5, { size: 8, bold: true });
+    addText(`Printed on: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, margin, sigY + 9, { size: 7 });
 
-    const outputName = filename || "Tailor-JobSheet.pdf";
+    // Signature lines
+    addLine(pageW - margin - 60, sigY + 5, pageW - margin - 25, sigY + 5);
+    addText("Tailor Master Sign", pageW - margin - 55, sigY + 9, { size: 7, bold: true });
+    addLine(pageW - margin - 20, sigY + 5, pageW - margin, sigY + 5);
+    addText("Customer Sign", pageW - margin - 17, sigY + 9, { size: 7, bold: true });
+
+    // Save
+    const outputName = filename || `Tailor_JobSheet_${order.order_number || order.id}`;
     const cleanFilename = outputName.endsWith(".pdf") ? outputName : `${outputName}.pdf`;
     pdf.save(cleanFilename);
-    toast.success("PDF downloaded directly!", { id: toastId });
+    toast.success("PDF downloaded!", { id: toastId });
   } catch (err: any) {
-    console.error("PDF Download error details:", err);
+    console.error("PDF Download error:", err);
     toast.error(`Failed to generate PDF: ${err?.message || "Unknown error"}`, { id: toastId });
-  } finally {
-    if (root) {
-      try { root.unmount(); } catch {}
-    }
-    if (tempContainer && document.body.contains(tempContainer)) {
-      try { document.body.removeChild(tempContainer); } catch {}
-    }
   }
 }
