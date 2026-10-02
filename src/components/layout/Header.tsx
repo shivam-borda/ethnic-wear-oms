@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types";
 
 function getBreadcrumbs(pathname: string) {
-  const crumbs = [{ label: "Dashboard", href: "/" }];
+  const crumbs = [{ label: "🏠 Home", href: "/" }];
   if (pathname === "/") return crumbs;
 
   const segments = pathname.split("/").filter(Boolean);
@@ -19,6 +19,7 @@ function getBreadcrumbs(pathname: string) {
     parties: "Parties",
     "fabric-parties": "Fabric Parties",
     settings: "Settings",
+    measurements: "Measurements",
   };
 
   segments.forEach((seg, i) => {
@@ -65,11 +66,11 @@ export default function Header({
 
   return (
     <header
-      className="sticky top-0 z-10 flex items-center justify-between px-6 py-3.5 bg-card border-b"
+      className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-card border-b"
       style={{ borderColor: "hsl(var(--border))" }}
     >
-      {/* Breadcrumb + Title */}
-      <div className="flex items-center gap-3">
+      {/* Breadcrumb + Title + Home / Toggle Buttons */}
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
         {onToggleSidebar && (
           <button
             onClick={onToggleSidebar}
@@ -90,46 +91,67 @@ export default function Header({
           </button>
         )}
 
-        <div>
-        {crumbs.length > 1 && (
-          <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-0.5">
-            {crumbs.map((crumb, i) => (
-              <span key={crumb.href} className="flex items-center gap-1">
-                {i < crumbs.length - 1 ? (
-                  <>
-                    <Link
-                      href={crumb.href}
-                      className="hover:text-foreground transition-colors"
-                    >
-                      {crumb.label}
-                    </Link>
-                    <span>›</span>
-                  </>
-                ) : (
-                  <span className="text-foreground font-medium">
-                    {crumb.label}
-                  </span>
-                )}
-              </span>
-            ))}
-          </nav>
-        )}
-        <h1
-          className="text-xl font-bold"
-          style={{ fontFamily: "Cormorant Garamond, serif" }}
+        {/* Dedicated Quick Home Icon Button */}
+        <Link
+          href="/"
+          id="header-quick-home-btn"
+          className="flex items-center justify-center w-9 h-9 rounded-lg border bg-background hover:bg-muted hover:border-primary/50 text-foreground transition-all shadow-sm flex-shrink-0"
+          title="Go to Home / Dashboard (મુખ્ય પાનું)"
         >
-          {pageTitle}
-        </h1>
+          <span className="text-base">🏠</span>
+        </Link>
+
+        <div className="min-w-0">
+          {crumbs.length > 1 && (
+            <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
+              {crumbs.map((crumb, i) => (
+                <span key={crumb.href} className="flex items-center gap-1">
+                  {i < crumbs.length - 1 ? (
+                    <>
+                      <Link
+                        href={crumb.href}
+                        className="hover:text-foreground hover:underline transition-colors"
+                      >
+                        {crumb.label}
+                      </Link>
+                      <span>›</span>
+                    </>
+                  ) : (
+                    <span className="text-foreground font-medium truncate">
+                      {crumb.label}
+                    </span>
+                  )}
+                </span>
+              ))}
+            </nav>
+          )}
+          <h1
+            className="text-lg sm:text-xl font-bold truncate leading-tight"
+            style={{ fontFamily: "Cormorant Garamond, serif" }}
+          >
+            {pageTitle}
+          </h1>
         </div>
       </div>
 
-      {/* Right side */}
-      <div className="flex items-center gap-3">
-        {/* Quick actions */}
+      {/* Right side actions */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        {/* Prominent Home Button */}
+        <Link
+          href="/"
+          id="header-home-btn"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold border bg-background hover:bg-muted hover:border-primary text-foreground transition-all shadow-sm"
+          title="Go to Home Page"
+        >
+          <span className="text-sm">🏠</span>
+          <span className="hidden sm:inline">Home</span>
+        </Link>
+
+        {/* Quick New Order */}
         <Link
           href="/orders/new"
           id="header-new-order-btn"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-90"
+          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all hover:opacity-90 shadow-sm"
           style={{
             background: "hsl(var(--primary))",
             color: "hsl(var(--primary-foreground))",

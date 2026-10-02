@@ -307,8 +307,8 @@ export default function DashboardClient({
                 className="text-xs font-medium text-muted-foreground uppercase tracking-wide"
                 style={{ background: "hsl(var(--muted))" }}
               >
+                <th className="px-4 py-3 text-left">Customer (Party)</th>
                 <th className="px-4 py-3 text-left">Order No</th>
-                <th className="px-4 py-3 text-left">Party</th>
                 <th className="px-4 py-3 text-left">Order Date</th>
                 <th className="px-4 py-3 text-left">Delivery</th>
                 <th className="px-4 py-3 text-left">Items</th>
@@ -336,15 +336,16 @@ export default function DashboardClient({
                       style={{ borderColor: "hsl(var(--border))" }}
                     >
                       <td className="px-4 py-3">
-                        <span
-                          className="font-bold hover:underline"
-                          style={{ color: "hsl(var(--primary))" }}
-                        >
-                          {order.order_number}
+                        <span className="font-extrabold text-base text-foreground block hover:text-primary transition-colors" style={{ fontFamily: "Cormorant Garamond, serif" }}>
+                          👤 {order.party?.name || "—"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-medium text-foreground">
-                        {order.party?.name || "—"}
+                      <td className="px-4 py-3">
+                        <span
+                          className="font-bold text-xs text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded"
+                        >
+                          #{order.order_number}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {formatDate(order.order_date)}

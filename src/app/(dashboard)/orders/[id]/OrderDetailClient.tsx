@@ -280,6 +280,25 @@ export default function OrderDetailClient({ order: initialOrder, additionalLogs 
     <>
       {/* Screen Interactive Dashboard View */}
       <div className="max-w-5xl mx-auto space-y-6 print:hidden">
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border bg-card hover:bg-muted text-foreground transition-all shadow-sm"
+              title="Go to Home / Dashboard"
+            >
+              <span>🏠</span> Home
+            </Link>
+            <Link
+              href="/orders"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border bg-card hover:bg-muted text-foreground transition-all shadow-sm"
+            >
+              <span>←</span> All Orders
+            </Link>
+          </div>
+        </div>
+
         {/* Header Card */}
         <div
           className="rounded-xl p-4 sm:p-6 relative overflow-hidden"

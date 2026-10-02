@@ -8,6 +8,23 @@ import type { Order } from "@/types";
 import { parseMeasurements, getCleanSlipNumber, ITEM_TYPE_LABELS, getAttachmentCategory } from "@/types";
 import { downloadJobSheetAsPDF } from "@/lib/downloadPdf";
 
+const ITEM_TYPE_LABELS_GU: Record<string, string> = {
+  kurta: "કુર્તા (Kurta)",
+  koti: "કોટી (Koti)",
+  kurta_koti: "કુર્તા + કોટી (Kurta + Koti)",
+  pant: "પેન્ટ / પાયજામા (Pant)",
+  blazer: "બ્લેઝર (Blazer)",
+  jacket: "જેકેટ (Jacket)",
+  indo_western: "ઈન્ડો વેસ્ટર્ન (Indo Western)",
+  jodhpuri: "જોધપુરી (Jodhpuri)",
+};
+
+const STATUS_LABELS_GU: Record<string, string> = {
+  active: "● Active (ચાલુ)",
+  delivered: "✓ Delivered (ડીલીવર)",
+  cancelled: "✕ Cancelled (કેન્સલ)",
+};
+
 export function PrintableJobSheet({ order, showActions = false }: { order: Order; showActions?: boolean }) {
   const fabricAttachments = (order.attachments || []).filter((a) => {
     const c = getAttachmentCategory(a);
@@ -42,6 +59,7 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
           </button>
         </div>
       )}
+
       {/* 1. Shop Header */}
       <div className="border-b-2 border-black pb-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
         <div>
@@ -51,13 +69,18 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
           >
             Aahman Ethnic Wear
           </h1>
-          <p className="text-[10px] sm:text-[11px] font-semibold text-gray-700">
-            Tailor Job Sheet & Customer Measurement Slip
+          <p className="text-[10px] sm:text-xs font-bold text-gray-700 tracking-wide mt-0.5">
+            PREMIUM MEN'S ETHNIC WEAR & BESPOKE TAILORING (મેન્સ એથનિક વિયર)
+          </p>
+          <p className="text-[9px] text-gray-600 mt-0.5">
+            29, 1st Floor, Archana Eco Industry, Simada Check Post, Surat • 📞 +91 70484 75024
           </p>
         </div>
-        <div className="text-center sm:text-right border-t sm:border-t-0 pt-1.5 sm:pt-0 w-full sm:w-auto border-black">
-          <div className="inline-block border-2 border-black px-2.5 py-0.5 sm:py-1 rounded bg-gray-50">
-            <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Measurement Slip #</p>
+        <div className="flex flex-row sm:flex-col items-center sm:items-end gap-1.5">
+          <div className="bg-gray-100 border border-black px-3 py-1 text-center rounded-sm">
+            <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">
+              Measurement Slip # (માપ કાપલી નં)
+            </p>
             <p className="text-sm sm:text-lg font-black text-blue-950 tracking-wider">
               {slipNo || order.order_number}
             </p>
@@ -65,93 +88,119 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
         </div>
       </div>
 
-      {/* 2. Order & Customer Info Header */}
+      {/* 2. Order & Customer Info Header with Gujarati Labels */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border border-black p-2 rounded-sm bg-gray-50/70">
         <div>
-          <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Order Number</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">Order # (ઓર્ડર નંબર)</p>
           <p className="font-extrabold text-xs sm:text-sm">{order.order_number}</p>
         </div>
         <div>
-          <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Vyapar Order #</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">Vyapar # (વેપાર ઓર્ડર નં)</p>
           <p className="font-extrabold text-xs sm:text-sm">{order.vyapar_order_number || "—"}</p>
         </div>
         <div>
-          <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Customer / Party Name</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">Customer (પાર્ટી નામ)</p>
           <p className="font-extrabold text-xs sm:text-sm truncate">{order.party?.name || "—"}</p>
         </div>
         <div>
-          <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Phone Number</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">Phone (મોબાઈલ નંબર)</p>
           <p className="font-extrabold text-xs sm:text-sm">{order.phone || order.party?.phone || "—"}</p>
         </div>
         <div>
-          <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Order Date</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">Order Date (ઓર્ડર તારીખ)</p>
           <p className="font-semibold text-xs">{order.order_date ? format(new Date(order.order_date), "dd/MM/yyyy") : "—"}</p>
         </div>
         <div>
-          <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Delivery Date</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">Delivery (ડિલિવરી તારીખ)</p>
           <p className="font-bold text-red-700 text-xs">{order.delivery_date ? format(new Date(order.delivery_date), "dd/MM/yyyy") : "—"}</p>
         </div>
         <div>
-          <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Order Status</p>
-          <p className="font-bold uppercase text-[10px] sm:text-[11px]">{order.status}</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">Status (ઓર્ડર સ્ટેટસ)</p>
+          <p className="font-bold uppercase text-[10px] sm:text-[11px]">{STATUS_LABELS_GU[order.status] || order.status}</p>
         </div>
         <div>
-          <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">Total Items</p>
-          <p className="font-bold text-xs sm:text-sm">{order.order_items?.length || 0} Items</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase">Total Items (કુલ નંગ)</p>
+          <p className="font-bold text-xs sm:text-sm">{order.order_items?.length || 0} Items (નંગ)</p>
         </div>
       </div>
 
-      {/* 3. Measurements Section (Upper & Bottom Garment) */}
+      {/* 3. Measurements Section (Upper & Bottom Garment with Gujarati Labels) */}
       <div className="space-y-2.5">
         {/* Upper Body Garment Table */}
         <div className="border border-black rounded-sm overflow-hidden">
           <div className="bg-gray-100 border-b border-black px-2.5 py-1 font-bold text-[11px] uppercase flex flex-wrap items-center justify-between gap-1">
-            <span>👔 Upper Body Measurements (અપર બોડી - Kurta / Koti / Blazer)</span>
-            <span className="text-[9px] font-normal text-gray-600">Upper Body</span>
+            <span>👔 Upper Body Measurements (અપર બોડી માપ - Kurta / Koti / Blazer)</span>
+            <span className="text-[9px] font-bold text-gray-700">ઉપરના કપડાં</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-0 divide-x divide-y divide-black text-center text-xs">
-            <PrintCell label="1) Lambai (લંબાઈ)" value={m.lambai} />
-            <PrintCell label="2) Bai (બાઈ)" value={m.bai} />
-            <PrintCell label="3) Solder (સોલ્ડર)" value={m.solder} />
-            <PrintCell label="4) Chati (છાતી)" value={m.chati} />
-            <PrintCell label="5) Pet (પેટ)" value={m.pet} />
-            <PrintCell label="6) Sheet (સીટ)" value={m.sheet_upper} />
-            <PrintCell label="7) Cuff (કફ)" value={m.cap} />
-            <PrintCell label="8) Coller (કોલર)" value={m.coller} />
-          </div>
+          <table className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
+            <tbody>
+              <tr className="border-b border-black">
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">1) Lambai<br/>(લંબાઈ)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.lambai || m.kurta_length || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">2) Bai<br/>(બાઈ)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.bai || m.sleeve_length || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">3) Solder<br/>(સોલ્ડર)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.solder || m.shoulder || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">4) Chati<br/>(છાતી)</td>
+                <td className="p-2 bg-white text-center text-sm font-black text-black align-middle">{m.chati || m.chest || "—"}</td>
+              </tr>
+              <tr>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">5) Pet<br/>(પેટ)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.pet || m.stomach || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">6) Sheet<br/>(સીટ)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.sheet_upper || m.hips || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">7) Cuff<br/>(કફ)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.cap || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">8) Coller<br/>(કોલર)</td>
+                <td className="p-2 bg-white text-center text-sm font-black text-black align-middle">{m.coller || "—"}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         {/* Bottom Garment Table */}
         <div className="border border-black rounded-sm overflow-hidden">
           <div className="bg-gray-100 border-b border-black px-2.5 py-1 font-bold text-[11px] uppercase flex flex-wrap items-center justify-between gap-1">
-            <span>👖 Bottom Garment Measurements (બોટમ - Pant / Pyjama)</span>
-            <span className="text-[9px] font-normal text-gray-600">Bottom</span>
+            <span>👖 Bottom Garment Measurements (બોટમ માપ - Pant / Pyjama)</span>
+            <span className="text-[9px] font-bold text-gray-700">નીચેના કપડાં</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-0 divide-x divide-y divide-black text-center text-xs">
-            <PrintCell label="1) Lambai (લંબાઈ)" value={m.lambai_bottom} />
-            <PrintCell label="2) Kamber (કમર)" value={m.kamber} />
-            <PrintCell label="3) Sheet (સીટ)" value={m.sheet} />
-            <PrintCell label="4) Jang (ઝાંગ)" value={m.jang} />
-            <PrintCell label="5) Moli (મોરી)" value={m.moli} />
-            <PrintCell label="6) Kistak (કિસ્તક)" value={m.kistak} />
-          </div>
+          <table className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
+            <tbody>
+              <tr className="border-b border-black">
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">1) Lambai<br/>(લંબાઈ)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.lambai_bottom || m.pant_length || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">2) Kamber<br/>(કમર)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.kamber || m.pant_waist || m.waist || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">3) Sheet<br/>(સીટ)</td>
+                <td className="p-2 bg-white text-center text-sm font-black text-black align-middle">{m.sheet || m.hips || "—"}</td>
+              </tr>
+              <tr>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">4) Jang<br/>(ઝાંગ)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.jang || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">5) Moli<br/>(મોરી)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.moli || m.bottom_mori || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">6) Kistak<br/>(કિસ્તક)</td>
+                <td className="p-2 bg-white text-center text-sm font-black text-black align-middle">{m.kistak || "—"}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* 4. Ordered Items Table */}
+      {/* 4. Ordered Items Summary */}
       {order.order_items && order.order_items.length > 0 && (
-        <div className="border border-black rounded-sm overflow-x-auto">
-          <div className="bg-gray-100 border-b border-black px-2.5 py-1 font-bold text-[11px] uppercase min-w-[450px]">
-            👗 Ordered Items Summary ({order.order_items.length})
+        <div className="border border-black rounded-sm overflow-hidden">
+          <div className="bg-gray-100 border-b border-black px-2.5 py-1 font-bold text-[11px] uppercase text-black">
+            👗 Ordered Items Summary (ઓર્ડર કરેલ આઈટમ વિગત - {order.order_items.length} નંગ)
           </div>
           <table className="w-full text-left text-xs border-collapse min-w-[450px]">
             <thead>
               <tr className="bg-gray-50 border-b border-black text-[10px] font-bold text-gray-800 uppercase">
                 <th className="p-1 border-r border-black w-8 text-center">#</th>
-                <th className="p-1 border-r border-black">Item Type</th>
-                <th className="p-1 border-r border-black w-10 text-center">Qty</th>
-                <th className="p-1 border-r border-black">Fabric Party</th>
-                <th className="p-1">Fabric Details & Special Instructions</th>
+                <th className="p-1 border-r border-black">Item Type (આઈટમ)</th>
+                <th className="p-1 border-r border-black w-10 text-center">Qty (નંગ)</th>
+                <th className="p-1 border-r border-black">Fabric Party (ફેબ્રિક પાર્ટી)</th>
+                <th className="p-1">Fabric Details & Special Instructions (કાપડ અને ખાસ સૂચના)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-black">
@@ -159,19 +208,19 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
                 <tr key={item.id || idx} className="align-top">
                   <td className="p-1 border-r border-black text-center font-bold">{idx + 1}</td>
                   <td className="p-1 border-r border-black font-bold text-black">
-                    {ITEM_TYPE_LABELS[item.item_type]}
+                    {ITEM_TYPE_LABELS_GU[item.item_type] || ITEM_TYPE_LABELS[item.item_type] || item.item_type}
                   </td>
-                  <td className="p-1 border-r border-black text-center font-bold">{item.quantity}</td>
+                  <td className="p-1 border-r border-black text-center font-bold">{item.quantity || 1}</td>
                   <td className="p-1 border-r border-black font-medium">{item.fabric_party?.name || "—"}</td>
                   <td className="p-1 space-y-0.5">
                     {item.fabric_details && (
-                      <div><span className="font-semibold text-gray-700">Fabric: </span>{item.fabric_details}</div>
+                      <div><span className="font-semibold text-gray-700">Fabric (કાપડ): </span>{item.fabric_details}</div>
                     )}
                     {item.special_instructions && (
-                      <div><span className="font-semibold text-gray-700">Instructions: </span>{item.special_instructions}</div>
+                      <div><span className="font-semibold text-gray-700">Instructions (સૂચના): </span>{item.special_instructions}</div>
                     )}
                     {item.notes && (
-                      <div><span className="font-semibold text-gray-700">Notes: </span>{item.notes}</div>
+                      <div><span className="font-semibold text-gray-700">Notes (નોંધ): </span>{item.notes}</div>
                     )}
                   </td>
                 </tr>
@@ -185,7 +234,7 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
       {order.notes && (
         <div className="border border-black rounded-sm p-2 bg-gray-50/50 space-y-1">
           <div className="font-bold text-[11px] uppercase border-b border-gray-300 pb-1 text-black">
-            📋 Fabric & Design Points (મટીરીયલ અને ડિઝાઈન પોઈન્ટ્સ)
+            📋 Fabric & Design Points (મટીરીયલ અને ડિઝાઈન પોઈન્ટ્સ / ખાસ સૂચના)
           </div>
           <div className="text-xs pt-0.5 pl-1.5">
             <BulletPointsList text={order.notes} />
@@ -197,7 +246,7 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
       {fabricAttachments.length > 0 && (
         <div className="border border-black rounded-sm p-2 space-y-1">
           <div className="font-bold text-[11px] uppercase border-b border-gray-300 pb-1">
-            🧶 Fabric & Material Samples ({fabricAttachments.length})
+            🧶 Fabric & Material Samples (કાપડના સેમ્પલ ફોટા - {fabricAttachments.length})
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             {fabricAttachments.map((att, idx) => {
@@ -228,7 +277,7 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
       {referenceAttachments.length > 0 && (
         <div className="border border-black rounded-sm p-2 space-y-1">
           <div className="font-bold text-[11px] uppercase border-b border-gray-300 pb-1">
-            📸 Design & Style Reference Images ({referenceAttachments.length})
+            📸 Design & Style Reference Images (ડિઝાઈન રેફરન્સ ફોટા - {referenceAttachments.length})
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             {referenceAttachments.map((att, idx) => {
@@ -268,7 +317,7 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
         />
       )}
 
-      {/* 7. Signatures & Footer Verification */}
+      {/* 7. Signatures & Footer Verification with Gujarati Labels */}
       <div className="pt-3 border-t-2 border-black flex flex-col sm:flex-row items-center sm:items-end justify-between gap-3 text-xs font-semibold">
         <div>
           <p className="font-bold">Aahman Ethnic Wear OMS</p>
@@ -279,11 +328,11 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
         <div className="flex gap-4 sm:gap-8 text-center w-full sm:w-auto justify-between sm:justify-end">
           <div>
             <div className="w-24 sm:w-36 border-b border-black mb-1"></div>
-            <p className="text-[9px] sm:text-[10px] text-gray-700 uppercase font-bold">Tailor Master Sign</p>
+            <p className="text-[9px] sm:text-[10px] text-gray-700 uppercase font-bold">Tailor Master Sign (ટેલર માસ્ટર સહી)</p>
           </div>
           <div>
             <div className="w-24 sm:w-36 border-b border-black mb-1"></div>
-            <p className="text-[9px] sm:text-[10px] text-gray-700 uppercase font-bold">Customer Sign</p>
+            <p className="text-[9px] sm:text-[10px] text-gray-700 uppercase font-bold">Customer Sign (ગ્રાહક સહી)</p>
           </div>
         </div>
       </div>
@@ -293,9 +342,9 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
 
 function PrintCell({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="p-1 sm:p-1.5 bg-white">
-      <div className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase">{label}</div>
-      <div className="text-xs sm:text-sm font-black text-black mt-0.5">
+    <div className="p-1 sm:p-1.5 bg-white text-center flex flex-col items-center justify-center min-h-[52px]">
+      <div className="text-[9px] sm:text-[10px] font-bold text-gray-700 uppercase leading-tight text-center">{label}</div>
+      <div className="text-xs sm:text-sm font-black text-black mt-0.5 text-center">
         {value && value.trim() ? value : "—"}
       </div>
     </div>

@@ -16,7 +16,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "dashboard", label: "Dashboard", icon: "📊", href: "/" },
+  { id: "dashboard", label: "Home (Dashboard)", icon: "🏠", href: "/" },
   {
     id: "orders",
     label: "Orders",
@@ -74,7 +74,7 @@ export default function Sidebar({ isCollapsed, onToggle, onItemClick }: SidebarP
         className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0"
         style={{ borderColor: "hsl(var(--sidebar-border))" }}
       >
-        <div className="flex items-center gap-3">
+        <Link href="/" onClick={onItemClick} className="flex items-center gap-3 hover:opacity-90 transition-opacity">
           <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center flex-shrink-0 shadow-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -99,7 +99,7 @@ export default function Sidebar({ isCollapsed, onToggle, onItemClick }: SidebarP
               Ethnic Wear ERP
             </div>
           </div>
-        </div>
+        </Link>
         {onToggle && (
           <button
             onClick={onToggle}

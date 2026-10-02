@@ -3,6 +3,7 @@ import SearchableSelect from "@/components/ui/SearchableSelect";
 import ImageCropperModal from "@/components/ui/ImageCropperModal";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -533,6 +534,24 @@ export default function CreateOrderClient({
 
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6">
+      {/* Top Navigation Bar */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border bg-card hover:bg-muted text-foreground transition-all shadow-sm"
+            title="Go to Home / Dashboard"
+          >
+            <span>🏠</span> Home
+          </Link>
+          <Link
+            href="/orders"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border bg-card hover:bg-muted text-foreground transition-all shadow-sm"
+          >
+            <span>←</span> All Orders
+          </Link>
+        </div>
+      </div>
 
       {/* Order Info */}
       <div className="form-section">
