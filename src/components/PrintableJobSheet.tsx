@@ -172,15 +172,19 @@ export function PrintableJobSheet({ order, showActions = false }: { order: Order
                 <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">2) Kamber<br/>(કમર)</td>
                 <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.kamber || m.pant_waist || m.waist || "—"}</td>
                 <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">3) Sheet<br/>(સીટ)</td>
-                <td className="p-2 bg-white text-center text-sm font-black text-black align-middle">{m.sheet || m.hips || "—"}</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.sheet || m.hips || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">4) Jang<br/>(ઝાંગ)</td>
+                <td className="p-2 bg-white text-center text-sm font-black text-black align-middle">{m.jang || m.thigh || "—"}</td>
               </tr>
               <tr>
-                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">4) Jang<br/>(ઝાંગ)</td>
-                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.jang || "—"}</td>
-                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">5) Moli<br/>(મોરી)</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">5) Ghuntan<br/>(ઘુંટણ)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.ghuntan || m.knee || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">6) Moli<br/>(મોરી)</td>
                 <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.moli || m.bottom_mori || "—"}</td>
-                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">6) Kistak<br/>(કિસ્તક)</td>
-                <td className="p-2 bg-white text-center text-sm font-black text-black align-middle">{m.kistak || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">7) Kistak<br/>(કિસ્તક)</td>
+                <td className="p-2 bg-white border-r-2 border-black text-center text-sm font-black text-black align-middle">{m.kistak || m.galo || "—"}</td>
+                <td className="p-1 bg-gray-50 border-r border-black text-center text-[9px] font-bold text-gray-700 uppercase align-middle">—</td>
+                <td className="p-2 bg-white text-center text-sm font-black text-black align-middle">—</td>
               </tr>
             </tbody>
           </table>

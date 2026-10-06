@@ -235,12 +235,14 @@ function createJobSheetHtml(order: Order): string {
             <tr style="border-bottom: 1px solid #000;">
               ${measPair("1) Lambai<br>(લંબાઈ)", m.lambai_bottom || m.pant_length, false)}
               ${measPair("2) Kamber<br>(કમર)", m.kamber || m.pant_waist || m.waist, false)}
-              ${measPair("3) Sheet<br>(સીટ)", m.sheet || m.hips, true)}
+              ${measPair("3) Sheet<br>(સીટ)", m.sheet || m.hips, false)}
+              ${measPair("4) Jang<br>(ઝાંગ)", m.jang || m.thigh, true)}
             </tr>
             <tr>
-              ${measPair("4) Jang<br>(ઝાંગ)", m.jang, false)}
-              ${measPair("5) Moli<br>(મોરી)", m.moli || m.bottom_mori, false)}
-              ${measPair("6) Kistak<br>(કિસ્તક)", m.kistak, true)}
+              ${measPair("5) Ghuntan<br>(ઘુંટણ)", m.ghuntan || m.knee, false)}
+              ${measPair("6) Moli<br>(મોરી)", m.moli || m.bottom_mori, false)}
+              ${measPair("7) Kistak<br>(કિસ્તક)", m.kistak || m.galo, false)}
+              ${measPair("—", "", true)}
             </tr>
           </table>
         </div>

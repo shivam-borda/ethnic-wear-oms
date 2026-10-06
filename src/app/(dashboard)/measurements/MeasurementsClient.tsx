@@ -50,7 +50,8 @@ export default function MeasurementsClient({ initialOrders }: Props) {
       m.sleeve_length ||
       m.pant_waist ||
       m.lambai ||
-      m.lambai_bottom
+      m.lambai_bottom ||
+      m.ghuntan
     );
   });
 

@@ -204,6 +204,7 @@ export default function CreateOrderClient({
     kamber: initialMeasurements.kamber || "",
     sheet: initialMeasurements.sheet || "",
     jang: initialMeasurements.jang || "",
+    ghuntan: initialMeasurements.ghuntan || initialMeasurements.knee || "",
     moli: initialMeasurements.moli || "",
     kistak: initialMeasurements.kistak || "",
     notes: initialMeasurements.notes || "",
@@ -796,7 +797,7 @@ export default function CreateOrderClient({
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <span>👖</span> Bottom Garment (બોટમ - Pant / Pyjama)
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1">1) Lambai (લંબાઈ)</label>
                   <input
@@ -842,7 +843,18 @@ export default function CreateOrderClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">5) Moli (મોરી)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">5) Ghuntan (ઘુંટણ)</label>
+                  <input
+                    type="text"
+                    value={measurements.ghuntan || ""}
+                    onChange={(e) => updateMeasurement("ghuntan", e.target.value)}
+                    placeholder="e.g. 18"
+                    className="w-full px-3 py-2 rounded-lg border bg-background text-sm outline-none focus:ring-1"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">6) Moli (મોરી)</label>
                   <input
                     type="text"
                     value={measurements.moli || ""}
@@ -853,7 +865,7 @@ export default function CreateOrderClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">6) Kistak (કિસ્તક / ગાળો)</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">7) Kistak (કિસ્તક / ગાળો)</label>
                   <input
                     type="text"
                     value={measurements.kistak || ""}

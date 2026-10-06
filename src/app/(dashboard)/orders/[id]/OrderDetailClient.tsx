@@ -401,7 +401,7 @@ export default function OrderDetailClient({ order: initialOrder, additionalLogs 
         {order.stitching_measurement_number && (() => {
           const m = parseMeasurements(order.stitching_measurement_number);
           const hasUpper = m.lambai || m.bai || m.solder || m.chati || m.pet || m.sheet_upper || m.cap || m.coller || m.kurta_length || m.chest || m.shoulder || m.stomach;
-          const hasLower = m.lambai_bottom || m.kamber || m.sheet || m.jang || m.moli || m.kistak || m.pant_length || m.pant_waist;
+          const hasLower = m.lambai_bottom || m.kamber || m.sheet || m.jang || m.ghuntan || m.knee || m.moli || m.kistak || m.pant_length || m.pant_waist;
 
           return (
             <div className="rounded-xl border bg-card p-4 sm:p-5 shadow-sm space-y-4" style={{ borderColor: "hsl(var(--border))" }}>
@@ -453,13 +453,14 @@ export default function OrderDetailClient({ order: initialOrder, additionalLogs 
               {hasLower && (
                 <div className="space-y-2 pt-2">
                   <p className="text-xs font-bold text-primary uppercase tracking-wide">👖 Bottom Garment (બોટમ)</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs">
                     {m.lambai_bottom && <div className="bg-muted/50 p-2 rounded border">1) Lambai (લંબાઈ): <span className="font-bold">{m.lambai_bottom}</span></div>}
                     {m.kamber && <div className="bg-muted/50 p-2 rounded border">2) Kamber (કમર): <span className="font-bold">{m.kamber}</span></div>}
                     {m.sheet && <div className="bg-muted/50 p-2 rounded border">3) Sheet (સીટ): <span className="font-bold">{m.sheet}</span></div>}
                     {m.jang && <div className="bg-muted/50 p-2 rounded border">4) Jang (ઝાંગ): <span className="font-bold">{m.jang}</span></div>}
-                    {m.moli && <div className="bg-muted/50 p-2 rounded border">5) Moli (મોરી): <span className="font-bold">{m.moli}</span></div>}
-                    {m.kistak && <div className="bg-muted/50 p-2 rounded border">6) Kistak (કિસ્તક): <span className="font-bold">{m.kistak}</span></div>}
+                    {(m.ghuntan || m.knee) && <div className="bg-muted/50 p-2 rounded border">5) Ghuntan (ઘુંટણ): <span className="font-bold">{m.ghuntan || m.knee}</span></div>}
+                    {m.moli && <div className="bg-muted/50 p-2 rounded border">6) Moli (મોરી): <span className="font-bold">{m.moli}</span></div>}
+                    {m.kistak && <div className="bg-muted/50 p-2 rounded border">7) Kistak (કિસ્તક): <span className="font-bold">{m.kistak}</span></div>}
                   </div>
                 </div>
               )}

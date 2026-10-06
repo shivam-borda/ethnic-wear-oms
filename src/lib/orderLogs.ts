@@ -44,6 +44,7 @@ const BOTTOM_MEASUREMENT_LABELS: Record<string, { en: string; gu: string }> = {
   kamber: { en: "Kamber (Waist)", gu: "કમર" },
   sheet: { en: "Bottom Sheet (Hips)", gu: "બોટમ સીટ" },
   jang: { en: "Jang (Thigh)", gu: "ઝાંગ" },
+  ghuntan: { en: "Ghuntan (Knee)", gu: "ઘુંટણ" },
   moli: { en: "Moli (Bottom Opening)", gu: "મોરી" },
   kistak: { en: "Kistak (Inseam/Crotch)", gu: "કિસ્તક" },
   notes: { en: "Measurement Notes", gu: "માપણી નોંધ" },

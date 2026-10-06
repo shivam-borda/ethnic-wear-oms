@@ -210,8 +210,9 @@ export interface GarmentMeasurements {
   kamber?: string;        // 2) Kamber (કમર)
   sheet?: string;         // 3) Sheet (સીટ)
   jang?: string;          // 4) Jang (ઝાંગ)
-  moli?: string;          // 5) Moli (મોરી)
-  kistak?: string;        // 6) Kistak (કિસ્તક)
+  ghuntan?: string;       // 5) Ghuntan (ઘુંટણ)
+  moli?: string;          // 6) Moli (મોરી)
+  kistak?: string;        // 7) Kistak (કિસ્તક)
 
   notes?: string;
 
@@ -263,6 +264,7 @@ export function parseMeasurements(raw?: string | null): GarmentMeasurements {
           kamber: parsed.kamber || parsed.pant_waist || parsed.waist || '',
           sheet: parsed.sheet || parsed.pant_hips || parsed.hips || '',
           jang: parsed.jang || parsed.thigh || '',
+          ghuntan: parsed.ghuntan || parsed.knee || '',
           moli: parsed.moli || parsed.bottom_mori || '',
           kistak: parsed.kistak || parsed.galo || '',
         };
