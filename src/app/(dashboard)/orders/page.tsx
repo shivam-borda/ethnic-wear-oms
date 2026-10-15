@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import OrdersClient from "./OrdersClient";
 import type { Order } from "@/types";
+import { normalizeOrder } from "@/lib/orderItems";
 
 export const dynamic = "force-dynamic";
 
@@ -10,14 +11,14 @@ export default async function OrdersPage() {
   const { data: orders } = await supabase
     .from("oms_orders")
     .select(
-      "id, order_number, vyapar_order_number, order_date, delivery_date, status, phone, stitching_measurement_number, created_at, party:parties(name, phone), order_items(id, item_type, quantity, item_progress(id, fabric_status, work_status, stitching_status, delivery_status, fabric_started_at, fabric_completed_at, work_started_at, work_completed_at, stitching_started_at, stitching_completed_at, delivery_started_at, delivery_completed_at))"
+      "id, order_number, vyapar_order_number, order_date, delivery_date, status, phone, stitching_measurement_number, created_at, party:parties(name, phone), order_items(id, item_type, quantity, notes, special_instructions, item_progress(id, fabric_status, work_status, stitching_status, delivery_status, fabric_started_at, fabric_completed_at, work_started_at, work_completed_at, stitching_started_at, stitching_completed_at, delivery_started_at, delivery_completed_at))"
     )
     .order("created_at", { ascending: false })
     .limit(100);
 
   return (
     <Suspense fallback={<OrdersSkeleton />}>
-      <OrdersClient initialOrders={(orders || []) as unknown as Order[]} />
+      <OrdersClient initialOrders={((orders || []).map(normalizeOrder)) as unknown as Order[]} />
     </Suspense>
   );
 }

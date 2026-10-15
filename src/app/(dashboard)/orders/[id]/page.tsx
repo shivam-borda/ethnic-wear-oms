@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import OrderDetailClient from "./OrderDetailClient";
 import type { Order } from "@/types";
 import type { OrderActivityLog } from "@/lib/orderLogs";
+import { normalizeOrder } from "@/lib/orderItems";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -42,10 +43,11 @@ export default async function OrderDetailPage({ params }: Props) {
     }
   } catch {}
 
-  // Sort items by position
+  // Normalize items and sort by position
+  const normalizedOrder = normalizeOrder(order);
   const sortedOrder = {
-    ...order,
-    order_items: [...(order.order_items || [])].sort(
+    ...normalizedOrder,
+    order_items: [...(normalizedOrder.order_items || [])].sort(
       (a, b) => (a.position || 0) - (b.position || 0)
     ),
   };

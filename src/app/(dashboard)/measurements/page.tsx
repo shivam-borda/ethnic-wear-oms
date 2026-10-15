@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import MeasurementsClient from "./MeasurementsClient";
 import type { Order } from "@/types";
+import { normalizeOrder } from "@/lib/orderItems";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function MeasurementsPage() {
   const { data: orders } = await supabase
     .from("oms_orders")
     .select(
-      "id, order_number, order_date, delivery_date, stitching_measurement_number, vyapar_order_number, status, phone, created_at, party:parties(name, phone), order_items(id, item_type)"
+      "id, order_number, order_date, delivery_date, stitching_measurement_number, vyapar_order_number, status, phone, created_at, party:parties(name, phone), order_items(id, item_type, notes)"
     )
     .not("stitching_measurement_number", "is", null)
     .neq("stitching_measurement_number", "")
@@ -21,7 +22,7 @@ export default async function MeasurementsPage() {
 
   return (
     <Suspense fallback={<MeasurementsSkeleton />}>
-      <MeasurementsClient initialOrders={(orders || []) as unknown as Order[]} />
+      <MeasurementsClient initialOrders={((orders || []).map(normalizeOrder)) as unknown as Order[]} />
     </Suspense>
   );
 }

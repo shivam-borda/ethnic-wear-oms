@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import CreateOrderClient from "../../new/CreateOrderClient";
 import type { Party, FabricParty, Order, OrderItemFormData } from "@/types";
 import { getAttachmentCategory } from "@/types";
+import { normalizeOrder } from "@/lib/orderItems";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -28,7 +29,7 @@ export default async function EditOrderPage({ params }: Props) {
 
   if (!order) notFound();
 
-  const typedOrder = order as Order;
+  const typedOrder = normalizeOrder(order as Order);
 
   const initialAttachments = (typedOrder.attachments || []).map((att) => ({
     id: att.id,

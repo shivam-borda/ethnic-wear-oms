@@ -294,3 +294,11 @@ CREATE INDEX IF NOT EXISTS idx_order_activity_logs_created_at ON public.order_ac
 
 ALTER TABLE public.order_activity_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "order_activity_logs_all" ON public.order_activity_logs FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- ============================================================
+-- 16. ITEM TYPE CHECK CONSTRAINT UPDATE
+-- ============================================================
+-- Run this in Supabase SQL Editor to allow all garment item types
+ALTER TABLE public.order_items DROP CONSTRAINT IF EXISTS order_items_item_type_check;
+ALTER TABLE public.order_items ADD CONSTRAINT order_items_item_type_check 
+  CHECK (item_type IN ('kurta', 'koti', 'kurta_koti', 'pant', 'blazer', 'jacket', 'indo_western', 'jodhpuri'));

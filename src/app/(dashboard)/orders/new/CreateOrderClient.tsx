@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import type { Party, FabricParty, OrderItemFormData, ItemType, GarmentMeasurements, OrderAttachmentFormData, Order } from "@/types";
 import { extractOrderLogs, encodeMeasurementsWithLogs, diffOrderChanges, createInitialOrderLog, type OrderActivityLog } from "@/lib/orderLogs";
+import { insertOrderItemsSafe } from "@/lib/orderItems";
 import { getAttachmentCategory } from "@/types";
 import { ITEM_TYPE_LABELS, parseMeasurements } from "@/types";
 
@@ -414,8 +415,7 @@ export default function CreateOrderClient({
           position: i,
         }));
         if (itemsToInsert.length > 0) {
-          const { error: itemsErr } = await supabase.from("order_items").insert(itemsToInsert);
-          if (itemsErr) throw itemsErr;
+          await insertOrderItemsSafe(supabase, itemsToInsert);
         }
 
         // Save attachments for existing order
@@ -499,8 +499,7 @@ export default function CreateOrderClient({
           position: i,
         }));
         if (itemsToInsert.length > 0) {
-          const { error: itemsErr } = await supabase.from("order_items").insert(itemsToInsert);
-          if (itemsErr) throw itemsErr;
+          await insertOrderItemsSafe(supabase, itemsToInsert);
         }
 
         // Save attachments for new order
