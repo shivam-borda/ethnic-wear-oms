@@ -2,7 +2,7 @@
 import { downloadJobSheetAsPDF, downloadMultipleJobSheetsPDF } from "@/lib/downloadPdf";
 import { PrintableJobSheet } from "@/components/PrintableJobSheet";
 import { BulletPointsList } from "@/components/ui/BulletPoints";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import type { Order, GarmentMeasurements, ItemType } from "@/types";
@@ -32,7 +32,34 @@ export default function MeasurementsClient({ initialOrders }: Props) {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isBatchPrintModalOpen, setIsBatchPrintModalOpen] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const pFromUrl = new URLSearchParams(window.location.search).get("page");
+      if (pFromUrl) {
+        const parsed = parseInt(pFromUrl, 10);
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+      }
+      const savedPage = sessionStorage.getItem("oms_measurements_page");
+      if (savedPage) {
+        const parsed = parseInt(savedPage, 10);
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+      }
+    }
+    return 1;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("oms_measurements_page", String(page));
+      const url = new URL(window.location.href);
+      if (page > 1) {
+        url.searchParams.set("page", String(page));
+      } else {
+        url.searchParams.delete("page");
+      }
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [page]);
   const PAGE_SIZE = 12;
 
   // Filter orders that have stitching_measurement_number / measurements
@@ -94,6 +121,13 @@ export default function MeasurementsClient({ initialOrders }: Props) {
   }, [ordersWithMeasurements, searchTerm, itemTypeFilter]);
 
   const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE);
+
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [totalPages, page]);
+
   const paginatedOrders = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Selected order objects
@@ -428,22 +462,40 @@ export default function MeasurementsClient({ initialOrders }: Props) {
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 rounded-xl border bg-card shadow-sm text-xs" style={{ borderColor: "hsl(var(--border))" }}>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 rounded-xl border bg-card shadow-sm text-xs" style={{ borderColor: "hsl(var(--border))" }}>
             <span className="text-muted-foreground">
-              Page {page} of {totalPages} ({filteredOrders.length} slips)
+              Page <strong className="text-foreground font-bold">{page}</strong> of <strong className="text-foreground font-bold">{totalPages}</strong> ({filteredOrders.length} slips)
             </span>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 rounded-lg border hover:bg-muted disabled:opacity-40 font-medium transition-colors"
+                className="px-3 py-1.5 rounded-lg border hover:bg-muted disabled:opacity-40 font-semibold transition-colors"
               >
                 ← Prev
               </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
+                .map((p, idx, arr) => (
+                  <span key={p} className="flex items-center">
+                    {idx > 0 && arr[idx - 1] !== p - 1 && <span className="px-1 text-xs text-muted-foreground">…</span>}
+                    <button
+                      onClick={() => setPage(p)}
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
+                        p === page
+                          ? "bg-primary text-primary-foreground shadow-sm font-bold"
+                          : "border hover:bg-muted text-muted-foreground"
+                      }`}
+                      style={p !== page ? { borderColor: "hsl(var(--border))" } : {}}
+                    >
+                      {p}
+                    </button>
+                  </span>
+                ))}
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 rounded-lg border hover:bg-muted disabled:opacity-40 font-medium transition-colors"
+                className="px-3 py-1.5 rounded-lg border hover:bg-muted disabled:opacity-40 font-semibold transition-colors"
               >
                 Next →
               </button>

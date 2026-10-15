@@ -290,12 +290,19 @@ export default function OrderDetailClient({ order: initialOrder, additionalLogs 
             >
               <span>🏠</span> Home
             </Link>
-            <Link
-              href="/orders"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border bg-card hover:bg-muted text-foreground transition-all shadow-sm"
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push("/orders");
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border bg-card hover:bg-muted text-foreground transition-all shadow-sm cursor-pointer"
             >
               <span>←</span> All Orders
-            </Link>
+            </button>
           </div>
         </div>
 
